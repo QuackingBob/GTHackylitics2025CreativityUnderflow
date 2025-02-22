@@ -14,7 +14,7 @@ window.addEventListener("resize", resizeCanvas);
 let isDrawing = false;
 let lastX = 0;
 let lastY = 0;
-let drawingColor = "#8a65c9"; // "#c2a7ef";
+let drawingColor = "#faeabb"; // "#fad35c";
 let lineWidth = 2;
 let history = [];
 let historyIndex = -1;
@@ -276,7 +276,7 @@ function restoreState(dataURL) {
 }
 
 document.getElementById("penButton").addEventListener("click", function () {
-    drawingColor = "#c2a7ef";
+    drawingColor = "#c99b0e";
     lineWidth = 2;
     isEraser = false;
     toggleActive(this);
@@ -383,7 +383,7 @@ function toggleSwitch(element) {
     element.classList.toggle("active");
     toggle_elem = document.getElementById("preview-toggle");
     if (toggle_elem.style.backgroundColor === "rgb(255, 255, 255)") {
-        toggle_elem.style.backgroundColor = "#c2a7ef";
+        toggle_elem.style.backgroundColor = "#fad35c";
     } else {
         toggle_elem.style.backgroundColor = "#ffffff";
     }

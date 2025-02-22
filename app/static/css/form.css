@@ -40,7 +40,7 @@ body {
 /* .top-bar .icon {
     width: 15px;
     height: 15px;
-    background-color: #c2a7ef;
+    background-color: #fad35c;
     border-radius: 50%;
 } */
 
@@ -51,7 +51,7 @@ body {
     justify-content: center;
     width: 30px;
     height: 20px;
-    border: 2px solid #7b5bbf;
+    border: 2px solid #faeabb;
     background-color: #ffffff;
     border-radius: 10px;
     position: relative;
@@ -64,7 +64,7 @@ body {
 .toggle .circle {
     width: 12px;
     height: 12px;
-    background-color: #7b5bbf;
+    background-color: #faeabb;
     border-radius: 50%;
     position: absolute;
     left: 2px;
@@ -83,7 +83,7 @@ body {
 .toggle.active .circle {
     right: 2px;
     left: auto;
-    background-color: #7b5bbf;
+    background-color: #faeabb;
     /* Change circle color when active */
     transition: all 0.3s ease;
 }
@@ -122,11 +122,11 @@ canvas {
 }
 
 .button:hover {
-    background-color: #c2a7ef;
+    background-color: #fad35c;
 }
 
 .button.active {
-    background-color: #c2a7ef;
+    background-color: #fad35c;
 }
 
 .render-preview {

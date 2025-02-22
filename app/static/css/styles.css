@@ -1998,7 +1998,7 @@ progress {
   font-size: 1rem;
   font-weight: 400;
   line-height: 1.5;
-  color: #212529;
+  color: #f2c744;
   background-color: #fff;
   background-clip: padding-box;
   border: 1px solid #ced4da;
@@ -4211,6 +4211,7 @@ textarea.form-control-lg {
 .card-title {
   margin-bottom: var(--bs-card-title-spacer-y);
   font-family: Arial, Helvetica, sans-serif;
+  color: #c99b0e;
 }
 
 .card-subtitle {
