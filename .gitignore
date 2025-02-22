@@ -64,3 +64,4 @@ vlm_query/*
 app/migrations/*
 *.png
 script_tests/
+image-scraper/Pictures
