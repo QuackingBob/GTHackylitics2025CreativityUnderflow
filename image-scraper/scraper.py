@@ -18,6 +18,7 @@ def get_soup(url,header):
 if len(sys.argv) != 2:
     print("Usage: python scraper.py [description]")
     sys.exit(0)
+    
 query = sys.argv[1]
 query= query.split()
 query='+'.join(query)
