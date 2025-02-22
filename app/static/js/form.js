@@ -14,7 +14,7 @@ window.addEventListener("resize", resizeCanvas);
 let isDrawing = false;
 let lastX = 0;
 let lastY = 0;
-let drawingColor = "#faeabb"; // "#fad35c";
+let drawingColor = "#ffd6cc"; // "#fad35c";
 let lineWidth = 2;
 let history = [];
 let historyIndex = -1;
@@ -276,7 +276,7 @@ function restoreState(dataURL) {
 }
 
 document.getElementById("penButton").addEventListener("click", function () {
-    drawingColor = "#c99b0e";
+    drawingColor = "#ffa582";
     lineWidth = 2;
     isEraser = false;
     toggleActive(this);

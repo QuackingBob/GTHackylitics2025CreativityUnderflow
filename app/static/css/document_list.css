@@ -1,12 +1,12 @@
 .btn-glow {
-    background-color: #fad35c !important;
+    background-color: #ffd6cc !important;
     border: none !important;
     transition: all 0.3s ease !important;
 }
 
 .btn-glow:hover {
-    background-color: #E89B50 !important;
-    box-shadow: 0 0 20px #E89B50 !important;
+    background-color:  #ffd6cc !important;
+    box-shadow: 0 0 20px #ffd6cc !important;
     transform: translateY(-2px) !important;
 }
 
