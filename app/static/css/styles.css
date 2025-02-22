@@ -1998,7 +1998,7 @@ progress {
   font-size: 1rem;
   font-weight: 400;
   line-height: 1.5;
-  color: #f2c744;
+  color: #c99b0e;
   background-color: #fff;
   background-clip: padding-box;
   border: 1px solid #ced4da;
@@ -2022,7 +2022,7 @@ progress {
 .form-control:focus {
   color: #212529;
   background-color: #fff;
-  border-color: #fab19d;
+  border-color: #c99b0e;
   outline: 0;
   box-shadow: 0 0 0 0.25rem rgba(244, 98, 58, 0.25);
 }
