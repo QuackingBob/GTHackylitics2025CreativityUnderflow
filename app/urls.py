@@ -31,4 +31,6 @@ urlpatterns = [
     path('documents/', views.document_list, name='document_list'),
     path('', views.landing, name='document_list'),
     path('documents/<int:document_id>/', views.document_detail, name='document_detail'),
+    path('documents/speak/', views.document_speak, name='document_speak'),
+    path('transcribe/', views.start_transcription, name='transcribe')
 ]
