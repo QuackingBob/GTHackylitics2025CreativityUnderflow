@@ -25,7 +25,7 @@ import logging
 from django.shortcuts import render
 from django.http import JsonResponse
 import torch
-import whisper
+
 import tempfile
 import os
 from django.views.decorators.csrf import csrf_exempt
@@ -42,6 +42,7 @@ def document_speak(request):
     return render(request, "app/document_speak.html")
 
 def generate_transcription():
+    
     recognizer = sr.Recognizer()
     model = whisper.load_model("small")
 
@@ -58,6 +59,7 @@ def generate_transcription():
                 yield f"data: Error: {str(e)}\n\n"
 
 def start_transcription(request):
+    import whisper
     return StreamingHttpResponse(generate_transcription(), content_type="text/event-stream")
 
 logger = logging.getLogger(__name__)
