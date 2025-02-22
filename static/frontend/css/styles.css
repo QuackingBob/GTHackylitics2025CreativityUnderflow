@@ -4,8 +4,8 @@
 :root {
   --header-height: 3rem;
   /*========== Colors ==========*/
-  --first-color: #c99b0e;
-  --first-color-lighter: #faeabb;
+  --first-color: #ffa582;
+  --first-color-lighter: #ffd6cc;
   --title-color: #f5fffe;
   --text-color: #d4d4d4;
   --body-color: #f5fffe;

@@ -13,14 +13,14 @@
 
   <style>
     .btn-glow {
-      background-color: #fad35c !important;
+      background-color: #f2c744 !important;
       border: none !important;
       transition: all 0.3s ease !important;
     }
 
     .btn-glow:hover {
-      background-color: #faeabb !important;
-      box-shadow: 0 0 20px #faeabb !important;
+      background-color: #ffd6cc !important;
+      box-shadow: 0 0 20px #ffd6cc !important;
       transform: translateY(-2px) !important;
     }
 
@@ -33,8 +33,8 @@
   <link rel="shortcut icon" type="image/png" href="{% static 'icons/AuToTeX_favicon.png' %}">
 </head>
 
-<body style="background-color: #faeabb;">
-  <section class="ftco-section" style="background-color: #faeabb;">
+<body style="background-color: #ffd6cc;">
+  <section class="ftco-section" style="background-color: #ffd6cc;">
     <div class="container">
       <div class="row justify-content-center">
         <div class="col-md-7 col-lg-5">
@@ -42,7 +42,7 @@
             <div class="login-wrap p-4 p-md-5">
               <div class="d-flex">
                 <div class="w-100">
-                  <h3 class="mb-4" style="font-family: Arial, Helvetica, sans-serif; color:black"><b>Sign In</b></h3>
+                  <h3 class="mb-4" style="font-family: Arial, Helvetica, sans-serif; color:#7f2b0a"><b>Sign In</b></h3>
                 </div>
                 <div class="w-100">
                   <p class="social-media d-flex justify-content-end">
@@ -106,19 +106,19 @@
 
                 <div class="form-group d-md-flex">
                   <div class="w-50 text-left">
-                    <label class="checkbox-wrap checkbox-primary mb-0" style="color:#c99b0e">Remember Me
+                    <label class="checkbox-wrap checkbox-primary mb-0" style="color:#ffa582">Remember Me
                       <input type="checkbox" name="remember">
                       <span class="checkmark"></span>
                     </label>
                   </div>
                   <div class="w-50 text-md-right">
-                    <a href="" style="color:#c99b0e">Forgot Password</a>
+                    <a href="" style="color:#ffa582">Forgot Password</a>
                   </div>
                 </div>
 
                 <input type="hidden" name="next" value="{{ next }}">
               </form>
-              <p class="text-center">Not a member? <a style="color:#c99b0e" href="{% url 'signup' %}"><b>Sign Up</b></a>
+              <p class="text-center">Not a member? <a style="color:#ffa582" href="{% url 'signup' %}"><b>Sign Up</b></a>
               </p>
             </div>
           </div>
