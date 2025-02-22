@@ -22,6 +22,44 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 import logging
 
+from django.shortcuts import render
+from django.http import JsonResponse
+import torch
+import whisper
+import tempfile
+import os
+from django.views.decorators.csrf import csrf_exempt
+from django.core.files.storage import default_storage
+import numpy as np
+import speech_recognition as sr
+from django.shortcuts import render
+from django.http import StreamingHttpResponse
+
+# Load the Whisper model (choose small, medium, or large based on available resources)
+# model = whisper.load_model("small")
+
+def document_speak(request):
+    return render(request, "app/document_speak.html")
+
+def generate_transcription():
+    recognizer = sr.Recognizer()
+    model = whisper.load_model("small")
+
+    with sr.Microphone(sample_rate=16000) as source:
+        recognizer.adjust_for_ambient_noise(source)
+        while True:
+            try:
+                print("Listening...")
+                audio = recognizer.listen(source, timeout=5)
+                audio_data = np.frombuffer(audio.get_raw_data(), dtype=np.int16).astype(np.float32) / 32768.0
+                result = model.transcribe(audio_data, fp16=torch.cuda.is_available())
+                yield f"data: {result['text'].strip()}\n\n"
+            except Exception as e:
+                yield f"data: Error: {str(e)}\n\n"
+
+def start_transcription(request):
+    return StreamingHttpResponse(generate_transcription(), content_type="text/event-stream")
+
 logger = logging.getLogger(__name__)
 
 class DocumentViewSet(viewsets.ModelViewSet):

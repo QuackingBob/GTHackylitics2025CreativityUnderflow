@@ -63,4 +63,5 @@ vlm_query/2024-11-02_23-58-12/output_raw.tex
 vlm_query/*
 app/migrations/*
 *.png
+script_tests/
 image-scraper/Pictures
