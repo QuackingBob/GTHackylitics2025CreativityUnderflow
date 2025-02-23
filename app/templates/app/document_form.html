@@ -1,131 +1,535 @@
 <!DOCTYPE html>
 <html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        {% load static %} {% csrf_token %}
+        <title>Impromptu</title>
+        <link
+            rel="stylesheet"
+            href="{% static 'css/form.css' %}" />
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css" />
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/night.css"
+            id="theme" />
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Source+Sans+Pro:wght@400;600&display=swap"
+            rel="stylesheet" />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap"
+            rel="stylesheet" />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Open+Sans:wght@400;600&display=swap"
+            rel="stylesheet" />
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/highlight/monokai.min.css" />
+        <link
+            rel="shortcut icon"
+            type="image/png"
+            href="{% static 'icons/Impromptu_favicon.png' %}" />
 
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    {% load static %}
-    <title>Impromptu</title>
-    <link rel="stylesheet" href="{% static 'css/form.css' %}" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" />
-    <link rel="stylesheet" href="{% static 'css/prism.css' %}">
-    <link rel="shortcut icon" type="image/png" href="{% static 'icons/Impromptu_favicon.png' %}" >
+        <style>
+            /* Sidebar styling */
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                height: 100vh;
+                width: 100px;
+                background-color: #ffffff;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-evenly;
+                align-items: stretch;
+                padding: 0;
+                box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+                z-index: 1000;
+            }
 
-    <style>
-        /* Sidebar styling */
-        .sidebar {
-            position: fixed;
-            left: 0;
-            top: 0;
-            height: 100vh;
-            width: 100px;
-            background-color: #ffffff;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-evenly;
-            align-items: stretch;
-            padding: 0;
-            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
-        }
+            .sidebar .button {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                width: 100%;
+                flex: 1;
+                border: none;
+                background: transparent;
+                cursor: pointer;
+                padding: 0;
+                transition: background-color 0.2s;
+                margin: 0;
+            }
 
-        .sidebar .button {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            flex: 1;
-            border: none;
-            background: transparent;
-            cursor: pointer;
-            padding: 0;
-            transition: background-color 0.2s;
-            margin: 0;
-        }
+            .sidebar .button:hover {
+                background-color: #f0f0f0;
+            }
 
-        .sidebar .button:hover {
-            background-color: #f0f0f0;
-        }
+            .container {
+                position: fixed;
+                top: 0;
+                left: 100px;
+                right: 0;
+                bottom: 0;
+                padding: 0;
+                margin: 0;
+                overflow: hidden;
+            }
 
-        .container {
-            position: fixed;
-            top: 0;
-            left: 100px;
-            right: 0;
-            bottom: 0;
-            padding: 0;
-            margin: 0;
-            overflow: hidden;
-        }
+            /* Text input area styling */
+            .text-input-area {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
 
-        /* Text input area styling */
-        .text-input-area {
-            width: 100%;
-            height: 100%;
-            margin: 0;
-            padding: 0;
-        }
+            #large-text-box {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 40px 20px 20px;
+                font-size: 30px;
+                line-height: 1.6;
+                border: none;
+                background-color: transparent;
+                resize: none;
+                outline: none;
+                overflow-y: auto;
+                box-sizing: border-box;
+            }
 
-        #large-text-box {
-            width: 100%;
-            height: 100%;
-            margin: 0;
-            padding: 40px 20px 20px;
-            font-size: 30px;
-            line-height: 1.6;
-            border: none;
-            background-color: transparent;
-            resize: none;
-            outline: none;
-            overflow-y: auto;
-            box-sizing: border-box;
-        }
-    </style>
-</head>
+            /* Presentation area styling */
+            .presentation-area {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                margin: 0;
+                padding: 0;
+                background-color: #1a1a1a;
+                z-index: 2000;
+            }
 
-<body>
-    <!-- Sidebar with buttons -->
-    <div class="sidebar">
-        <button class="button" id="penButton">
-            <img src="{% static 'icons/pen-line-svgrepo-com.svg' %}" style="height: 30px;" />
-        </button>
-        <button class="button" id="eraserButton">
-            <img src="{% static 'icons/eraser-svgrepo-com.svg' %}" style="height: 30px;" />
-        </button>
-        <button class="button" id="undoButton">
-            <img src="{% static 'icons/undo-left-round-svgrepo-com.svg' %}" style="height: 30px;" />
-        </button>
-        <button class="button" id="redoButton">
-            <img src="{% static 'icons/undo-right-round-svgrepo-com.svg' %}" style="height: 30px;" />
-        </button>
-        <button class="button" id="downloadButton">
-            <img src="{% static 'icons/download-minimalistic-svgrepo-com.svg' %}" style="height: 30px;" />
-        </button>
-        <button class="button" id="saveButton">
-            <img src="{% static 'icons/save-svgrepo-com.svg' %}" style="height: 30px;" />
-        </button>
-        <button class="button" id="backButton">
-            <img src="{% static 'icons/back-arrow-direction-down-right-left-up-2-svgrepo-com.svg' %}" style="height: 30px;" />
-        </button>
-        <button class="button" id="renderButton">
-            <img src="{% static 'icons/document-1-svgrepo-com.svg' %}" style="height: 0px;" />
-        </button>
-    </div>
+            .presentation-mode .presentation-area {
+                display: block;
+            }
 
-    <div class="container" data-document-id="{{ document.id }}">
-        <!-- Text Input Area -->
-        <div class="text-input-area">
-            <textarea id="large-text-box" placeholder="Type your script code here, or tap the microphone and preach!"></textarea>
+            .presentation-mode .text-input-area,
+            .presentation-mode .sidebar {
+                display: none;
+            }
+
+            .reveal h2 {
+                font-family: "Bebas Neue", cursive;
+                color: #eee;
+                text-align: center;
+                margin-top: 20px;
+                margin-bottom: 10px;
+            }
+
+            .reveal h3 {
+                font-family: "Source Sans Pro", sans-serif;
+                color: #eee;
+                text-align: left;
+            }
+
+            .reveal p,
+            .reveal li,
+            .reveal blockquote {
+                font-family: "Lato", sans-serif;
+                color: #ccc;
+            }
+
+            /* Loading and success message styles */
+            .loading-indicator {
+                display: none;
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 20px;
+                border-radius: 10px;
+                z-index: 2001;
+            }
+
+            .success-message {
+                display: none;
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: rgba(40, 167, 69, 0.9);
+                color: white;
+                padding: 10px 20px;
+                border-radius: 5px;
+                z-index: 2001;
+            }
+
+            /* Exit presentation button */
+            .exit-presentation {
+                display: none;
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: rgba(0, 0, 0, 0.5);
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 5px;
+                cursor: pointer;
+                z-index: 2002;
+            }
+
+            .presentation-mode .exit-presentation {
+                display: block;
+            }
+        </style>
+    </head>
+
+    <body>
+        <!-- Add loading indicator -->
+        <div class="loading-indicator">Generating presentation...</div>
+
+        <!-- Add success message -->
+        <div class="success-message">Changes saved successfully!</div>
+
+        <!-- Add exit presentation button -->
+        <div class="exit-presentation">
+            Press ESC or click here to exit presentation mode
         </div>
-    </div>  
 
-    <script>
- 
-    </script>
+        <!-- Sidebar with buttons -->
+        <div class="sidebar">
+            <button
+                class="button"
+                id="penButton">
+                <img
+                    src="{% static 'icons/pen-line-svgrepo-com.svg' %}"
+                    style="height: 30px" />
+            </button>
+            <button
+                class="button"
+                id="eraserButton">
+                <img
+                    src="{% static 'icons/eraser-svgrepo-com.svg' %}"
+                    style="height: 30px" />
+            </button>
+            <button
+                class="button"
+                id="undoButton">
+                <img
+                    src="{% static 'icons/undo-left-round-svgrepo-com.svg' %}"
+                    style="height: 30px" />
+            </button>
+            <button
+                class="button"
+                id="redoButton">
+                <img
+                    src="{% static 'icons/undo-right-round-svgrepo-com.svg' %}"
+                    style="height: 30px" />
+            </button>
+            <button
+                class="button"
+                id="downloadButton">
+                <img
+                    src="{% static 'icons/download-minimalistic-svgrepo-com.svg' %}"
+                    style="height: 30px" />
+            </button>
+            <button
+                class="button"
+                id="saveButton">
+                <img
+                    src="{% static 'icons/save-svgrepo-com.svg' %}"
+                    style="height: 30px" />
+            </button>
+            <button
+                class="button"
+                id="backButton">
+                <img
+                    src="{% static 'icons/back-arrow-direction-down-right-left-up-2-svgrepo-com.svg' %}"
+                    style="height: 30px" />
+            </button>
+            <button
+                class="button"
+                id="presentButton">
+                <img
+                    src="{% static 'icons/document-1-svgrepo-com.svg' %}"
+                    style="height: 30px" />
+            </button>
+        </div>
 
-    <script src="{% static 'js/form.js' %}"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-latex.min.js"></script>
-</body>
+        <div
+            class="container"
+            data-document-id="{{ document.id }}">
+            <!-- Text Input Area -->
+            <div class="text-input-area">
+                <textarea
+                    id="large-text-box"
+                    placeholder="Type your script code here, or tap the microphone and preach!">
+{{ document.txt_field }}</textarea
+                >
+            </div>
 
+            <!-- Presentation Area -->
+            <div class="presentation-area">
+                <div class="reveal">
+                    <div
+                        class="slides"
+                        id="presentation-content">
+                        {{ document.presentation_html|safe }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/notes/notes.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/markdown/markdown.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/highlight/highlight.js"></script>
+
+        <script>
+            // Initialize Reveal.js with better defaults
+            let deck = null;
+
+            function initializeReveal() {
+                if (deck) {
+                    deck.destroy();
+                }
+
+                deck = new Reveal({
+                    hash: true,
+                    transition: "slide",
+                    autoAnimate: true,
+                    plugins: [RevealMarkdown, RevealHighlight, RevealNotes],
+                    width: "100%",
+                    height: "100%",
+                    margin: 0.1,
+                    minScale: 0.2,
+                    maxScale: 2.0,
+                    controls: true,
+                    progress: true,
+                    center: true,
+                    touch: true,
+                });
+                deck.initialize();
+                return deck;
+            }
+
+            // Initialize reveal on page load
+            let reveal = initializeReveal();
+
+            let saveTimeout;
+            let lastSavedContent =
+                document.getElementById("large-text-box").value;
+            const loadingIndicator =
+                document.querySelector(".loading-indicator");
+            const successMessage = document.querySelector(".success-message");
+            const presentationArea =
+                document.querySelector(".presentation-area");
+            const exitButton = document.querySelector(".exit-presentation");
+            let isPresentationMode = false;
+
+            // Function to show success message
+            function showSuccessMessage() {
+                successMessage.style.display = "block";
+                setTimeout(() => {
+                    successMessage.style.display = "none";
+                }, 2000);
+            }
+
+            // Function to update presentation content
+            function updatePresentation(html) {
+                try {
+                    if (!html || typeof html !== "string") {
+                        console.warn("Invalid presentation HTML received");
+                        return;
+                    }
+
+                    const presentationContent = document.getElementById(
+                        "presentation-content"
+                    );
+                    if (!presentationContent) {
+                        console.error("Presentation content element not found");
+                        return;
+                    }
+
+                    // Safely update the content
+                    presentationContent.innerHTML = html;
+
+                    // Reinitialize Reveal.js
+                    reveal = initializeReveal();
+                } catch (error) {
+                    console.error("Error updating presentation:", error);
+                }
+            }
+
+            // Function to save content with debouncing and error handling
+            let saveInProgress = false;
+            async function saveContent(showLoading = false) {
+                const docId =
+                    document.querySelector(".container").dataset.documentId;
+                const textContent =
+                    document.getElementById("large-text-box").value;
+                const csrfToken = document.querySelector(
+                    "[name=csrfmiddlewaretoken]"
+                ).value;
+
+                // Don't save if content hasn't changed or a save is in progress
+                if (textContent === lastSavedContent || saveInProgress) {
+                    return;
+                }
+
+                if (showLoading) {
+                    loadingIndicator.style.display = "block";
+                }
+
+                saveInProgress = true;
+
+                try {
+                    const response = await fetch(`/save_text/${docId}/`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded",
+                            "X-CSRFToken": csrfToken,
+                        },
+                        body: `txt_content=${encodeURIComponent(textContent)}`,
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(
+                            `HTTP error! status: ${response.status}`
+                        );
+                    }
+
+                    const data = await response.json();
+
+                    if (data.presentation_html) {
+                        lastSavedContent = textContent;
+                        showSuccessMessage();
+                        updatePresentation(data.presentation_html);
+                    } else {
+                        console.warn("No presentation HTML in response");
+                    }
+                } catch (error) {
+                    console.error("Error saving:", error);
+                    alert("Error saving changes. Please try again.");
+                } finally {
+                    loadingIndicator.style.display = "none";
+                    saveInProgress = false;
+                }
+            }
+
+            // Debounced auto-save with longer delay
+            let saveTimeout = null;
+            document
+                .getElementById("large-text-box")
+                .addEventListener("input", function (e) {
+                    if (saveTimeout) {
+                        clearTimeout(saveTimeout);
+                    }
+                    saveTimeout = setTimeout(() => {
+                        saveContent(false);
+                    }, 3000);
+                });
+
+            // Save button click handler
+            document
+                .getElementById("saveButton")
+                .addEventListener("click", function () {
+                    if (saveTimeout) {
+                        clearTimeout(saveTimeout);
+                    }
+                    saveContent(true);
+                });
+
+            // Download button click handler
+            document
+                .getElementById("downloadButton")
+                .addEventListener("click", function () {
+                    const textContent =
+                        document.getElementById("large-text-box").value;
+                    const blob = new Blob([textContent], {
+                        type: "text/plain",
+                    });
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = "presentation_script.txt";
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                });
+
+            // Enter/exit presentation mode
+            function togglePresentationMode(enter) {
+                if (enter) {
+                    document.body.classList.add("presentation-mode");
+                    reveal.configure({
+                        width: "100%",
+                        height: "100%",
+                        margin: 0.1,
+                        minScale: 0.2,
+                        maxScale: 2.0,
+                        controls: true,
+                        progress: true,
+                        center: true,
+                        touch: true,
+                    });
+                    reveal.sync();
+                    reveal.slide(0);
+                } else {
+                    document.body.classList.remove("presentation-mode");
+                }
+                isPresentationMode = enter;
+            }
+
+            // Present button click handler
+            document
+                .getElementById("presentButton")
+                .addEventListener("click", function () {
+                    togglePresentationMode(true);
+                });
+
+            // Exit presentation handlers
+            exitButton.addEventListener("click", function () {
+                togglePresentationMode(false);
+            });
+
+            document.addEventListener("keydown", function (e) {
+                if (e.key === "Escape" && isPresentationMode) {
+                    togglePresentationMode(false);
+                }
+            });
+
+            // Back button click handler
+            document
+                .getElementById("backButton")
+                .addEventListener("click", function () {
+                    window.location.href = "/document_list/";
+                });
+
+            // Initialize presentation if there's content
+            if (
+                document.getElementById("presentation-content").innerHTML.trim()
+            ) {
+                updatePresentation(
+                    document.getElementById("presentation-content").innerHTML
+                );
+            }
+        </script>
+    </body>
 </html>
