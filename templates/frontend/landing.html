@@ -1,397 +1,251 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-    <!-- Box Icons -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/boxicons/2.1.4/css/boxicons.min.css"
-    />
-    
-    <!-- Swiper CSS -->
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'frontend/css/swiper-bundle.min.css' %}" />
-
-    <title>LaTeX Generation</title>
-
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-
-      html,
-      body {
-        height: 100%;
-        font-family: Arial, sans-serif;
-        overflow-x: hidden; /* Only hide horizontal scroll */
-      }
-
-      /* Modified scrollbar styles to allow scrolling while keeping clean appearance */
-      body::-webkit-scrollbar,
-      html::-webkit-scrollbar {
-        width: 8px;
-        background-color: #f5f5f5;
-      }
-
-      body::-webkit-scrollbar-thumb,
-      html::-webkit-scrollbar-thumb {
-        background-color: #888;
-        border-radius: 4px;
-      }
-
-      .header {
-        position: fixed;
-        width: 100%;
-        top: 0;
-        left: 0;
-        z-index: 100;
-        background: rgba(255, 255, 255, 0.95);
-      }
-
-      .nav {
-        height: 3.5rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0 2rem;
-      }
-
-      .nav__logo {
-        color: #333;
-        font-weight: 700;
-        text-decoration: none;
-        font-size: 1.5rem;
-      }
-
-      .nav__list {
-        display: flex;
-        list-style: none;
-        gap: 2rem;
-      }
-
-      .nav__link {
-        color: #666;
-        text-decoration: none;
-        transition: color 0.3s;
-      }
-
-      .nav__link:hover {
-        color: #333;
-      }
-
-      .main {
-        height: 100vh;
-        position: relative;
-      }
-
-      /* Fixed Swiper container positioning */
-      .gallery-top {
-        width: 100%;
-        height: 100vh;
-        position: relative;
-      }
-
-      .samples {
-        position: relative;
-        height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
-      }
-
-      .samples__bg {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        z-index: -1;
-        filter: brightness(0.7);
-      }
-
-      .samples__container {
-        color: white;
-        text-align: center;
-        padding: 2rem;
-        background: rgba(0, 0, 0, 0.6);
-        border-radius: 1rem;
-        max-width: 800px;
-        margin: 0 1rem;
-      }
-
-      .samples__title {
-        font-size: 2.5rem;
-        margin-bottom: 1rem;
-      }
-
-      .samples__description {
-        font-size: 1.1rem;
-        margin-bottom: 1.5rem;
-      }
-
-      .video-container {
-        width: 100%;
-        max-width: 560px;
-        margin: 1.5rem auto;
-        aspect-ratio: 16/9;
-        background: rgba(0, 0, 0, 0.3);
-        border-radius: 0.5rem;
-        overflow: hidden;
-      }
-
-      .video-container img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-
-      .samples__button {
-        display: inline-flex;
-        align-items: center;
-        padding: 0.75rem 1.5rem;
-        background: #fff;
-        color: #333;
-        text-decoration: none;
-        border-radius: 0.5rem;
-        transition: all 0.3s ease;
-        cursor: pointer;
-        font-weight: 600;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      }
-
-      .samples__button:hover {
-        transform: translateY(-2px);
-        background: #f0f0f0;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-      }
-
-      .samples__button-icon {
-        margin-left: 0.5rem;
-        transition: transform 0.3s;
-      }
-
-      /* Fixed thumbnail navigation */
-      .gallery-thumbs {
-        position: absolute;
-        bottom: 2rem;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 90%;
-        max-width: 400px;
-        z-index: 10;
-        height: 60px;
-      }
-
-      .controls__img {
-        width: 100px;
-        height: 60px;
-        border-radius: 0.5rem;
-        object-fit: cover;
-        cursor: pointer;
-        opacity: 0.5;
-        transition: opacity 0.3s;
-      }
-
-      .swiper-slide-thumb-active .controls__img {
-        opacity: 1;
-        border: 2px solid #fff;
-      }
-
-      /* Improved navigation buttons */
-      .swiper-button-next,
-      .swiper-button-prev {
-        color: #fff;
-        background: rgba(0, 0, 0, 0.3);
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        transition: background 0.3s;
-      }
-
-      .swiper-button-next:hover,
-      .swiper-button-prev:hover {
-        background: rgba(0, 0, 0, 0.5);
-      }
-
-      .swiper-button-next::after,
-      .swiper-button-prev::after {
-        font-size: 24px;
-      }
-
-      @media screen and (max-width: 768px) {
-        .samples__title {
-          font-size: 2rem;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        .controls__img {
-          width: 80px;
-          height: 50px;
+        :root {
+          --primary: #ffa582;
+          --secondary: #ff6b6b;
+          --background: #ffffff;
+          --surface: #fff8f5;
+          --text: #2d3436;
+          --text-secondary: #636e72;
+          --accent: #b23b3b;
         }
 
-        .video-container {
-          max-width: 100%;
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--background);
         }
-      }
+
+        header {
+            position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
+            background: var(--surface);
+            border-bottom: 1px solid rgba(74, 144, 226, 0.1);
+            z-index: 100;
+        }
+
+        .nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav__logo {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .nav__list {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav__link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 1rem;
+            transition: color 0.3s;
+        }
+
+        .nav__link:hover {
+            color: var(--accent);
+        }
+
+        .hero {
+            padding-top: 100px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+
+        .hero__content {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .hero__title {
+            font-size: 3.5rem;
+            color: var(--text);
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+
+        .hero__description {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 4rem auto;
+            padding: 0 2rem;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .feature-title {
+            font-size: 1.5rem;
+            color: var(--text);
+            margin-bottom: 1rem;
+        }
+
+        .feature-description {
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .demo-section {
+            max-width: 1200px;
+            margin: 4rem auto;
+            padding: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 4rem;
+        }
+
+        .demo-content {
+            flex: 1;
+        }
+
+        .demo-visual {
+            flex: 1;
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: transform 0.3s ease, background 0.3s ease;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            background: #357ABD;
+        }
+
+        @media (max-width: 768px) {
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .demo-section {
+                flex-direction: column;
+            }
+
+            .hero__title {
+                font-size: 2.5rem;
+            }
+        }
     </style>
-  </head>
-
-  <body>
-    <header class="header">
-      <nav class="nav">
-        <a href="#" class="nav__logo">AutoTex</a>
-        <ul class="nav__list">
-          <li class="nav__item"><a href="login" class="nav__link">Sign In</a></li>
-          <li class="nav__item"><a href="signup" class="nav__link">Sign Up</a></li>
-        </ul>
-      </nav>
+</head>
+<body>
+    <header>
+        <nav class="nav">
+            <a href="#" class="nav__logo">AutoPrez</a>
+            <ul class="nav__list">
+                <li class="nav__item">
+                    <a href="login" class="nav__link">Sign In</a>
+                </li>
+                <li class="nav__item">
+                    <a href="signup" class="nav__link">Sign Up</a>
+                </li>
+            </ul>
+        </nav>
     </header>
 
-    <main class="main">
-      <div class="swiper gallery-top">
-        <div class="swiper-wrapper">
-          <div class="swiper-slide samples">
-            <img src="{% static 'frontend/img/equation.jpg' %}" alt="" class="samples__bg" />
-            <div class="samples__container">
-              <h1 class="samples__title">Complex Equations</h1>
-              <p class="samples__description">
-                Transform complex handwritten equations flawlessly.
-              </p>
-              <script src="https://static.elfsight.com/platform/platform.js" async></script>
-              <div class="elfsight-app-79ff5344-4daf-48a2-9e86-89d30b68d619" data-elfsight-app-lazy></div>
-              <a href="signup" class="samples__button">
-                Try it! <i class="bx bx-right-arrow-alt samples__button-icon"></i>
-              </a>
-            </div>
-          </div>
-
-          <div class="swiper-slide samples">
-            <img src="{% static 'frontend/img/note.jpg' %}" alt="" class="samples__bg" />
-            <div class="samples__container">
-              <h1 class="samples__title">Notes</h1>
-              <p class="samples__description">
-                Convert entire handwritten notes into professional formats.
-              </p>
-               
-                <script src="https://static.elfsight.com/platform/platform.js" async></script>
-                <div class="elfsight-app-c303f571-0901-4817-aaf6-56eb21712993" data-elfsight-app-lazy></div>
-              
-              <a href="signup" class="samples__button">
-                Discover More <i class="bx bx-right-arrow-alt samples__button-icon"></i>
-              </a>
-            </div>
-          </div>
-
-          <div class="swiper-slide samples">
-            <img src="{% static 'frontend/img/structure.jpg' %}" alt="" class="samples__bg" />
-            <div class="samples__container">
-              <h1 class="samples__title">Complex Structures</h1>
-              <p class="samples__description">
-                Turn matrices and diagrams freely into research-grade material.
-              </p>
-              <script src="https://static.elfsight.com/platform/platform.js" async></script>
-              <div class="elfsight-app-46ac0707-a3fd-4140-85ba-8d18b94a6869" data-elfsight-app-lazy></div>
-              <a href="signup" class="samples__button">
-                Learn More <i class="bx bx-right-arrow-alt samples__button-icon"></i>
-              </a>
-            </div>
-          </div>
+    <section class="hero">
+        <div class="hero__content">
+            <h1 class="hero__title">Transform Your Ideas Into Professional Presentations Instantly</h1>
+            <p class="hero__description">
+                Upload your notes, documents, or rough sketches. AutoPrez uses AI to create beautiful, engaging presentations in seconds.
+            </p>
+            <a href="signup" class="cta-button">Try AutoPrez Free</a>
         </div>
-        <div class="swiper-button-next"></div>
-        <div class="swiper-button-prev"></div>
-      </div>
 
-      <div class="swiper gallery-thumbs">
-        <div class="swiper-wrapper">
-          <div class="swiper-slide">
-            <!--img src="{% static 'frontend/img/equation.jpg' %}" alt="equation thumbnail" class="controls__img" /-->
-          </div>
-          <div class="swiper-slide">
-            <!--img src="{% static 'frontend/img/note.jpg' %}" alt="note thumbnail" class="controls__img" /-->
-          </div>
-          <div class="swiper-slide">
-            <!--img src="{% static 'frontend/img/structure.jpg' %}" alt="structure thumbnail" class="controls__img" /-->
-          </div>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <i class="fas fa-magic feature-icon"></i>
+                <h3 class="feature-title">Smart Layout</h3>
+                <p class="feature-description">
+                    Our AI automatically organizes your content into professionally designed slides with perfect visual hierarchy.
+                </p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-image feature-icon"></i>
+                <h3 class="feature-title">Auto Visuals</h3>
+                <p class="feature-description">
+                    Automatically generates relevant images, icons, and data visualizations to enhance your message.
+                </p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-palette feature-icon"></i>
+                <h3 class="feature-title">Theme Intelligence</h3>
+                <p class="feature-description">
+                    Selects the perfect color scheme and typography based on your content and brand guidelines.
+                </p>
+            </div>
         </div>
-      </div>
-    </main>
 
-    <!-- GSAP -->
-    <script src="{% static 'frontend/js/gsap.min.js' %}"></script>
-
-    <!-- Swiper JS -->
-    <script src="{% static 'frontend/js/swiper-bundle.min.js' %}"></script>
-
-    <!-- Main JS -->
-    <script src="{% static 'frontend/js/main.js' %}"></script>
-
-    <script>
-    document.addEventListener('DOMContentLoaded', function () {
-  // Prevent scroll on spacebar
-  window.addEventListener('keydown', function(e) {
-    if(e.code === 'Space' && e.target == document.body) {
-      e.preventDefault();
-    }
-  });
-
-  // Initialize thumbnail swiper
-  const thumbsSwiper = new Swiper('.gallery-thumbs', {
-    spaceBetween: 10,
-    slidesPerView: 3,
-    watchSlidesProgress: true,
-    centerInsufficientSlides: true,
-    allowTouchMove: false, // Prevent touch movement on thumbnails
-  });
-
-  // Initialize main swiper
-  const mainSwiper = new Swiper('.gallery-top', {
-    spaceBetween: 10,
-    navigation: {
-      nextEl: '.swiper-button-next',
-      prevEl: '.swiper-button-prev',
-    },
-    thumbs: {
-      swiper: thumbsSwiper,
-    },
-    effect: 'fade',
-    fadeEffect: {
-      crossFade: true
-    },
-    keyboard: {
-      enabled: true,
-    },
-    grabCursor: true,
-    mousewheel: {
-      forceToAxis: true,
-      sensitivity: 1,
-      releaseOnEdges: true,
-    },
-    allowTouchMove: false, // Prevent touch movement
-    preventInteractionOnTransition: true, // Prevent interaction during transition
-    touchRatio: 0, // Disable touch ratio
-  });
-
-  // Prevent scroll when clicking navigation arrows
-  document.querySelector('.swiper-button-next').addEventListener('click', function(e) {
-    e.preventDefault();
-    e.stopPropagation();
-  });
-  
-  document.querySelector('.swiper-button-prev').addEventListener('click', function(e) {
-    e.preventDefault();
-    e.stopPropagation();
-  });
-
-  // Optional: Add keyboard navigation without scroll
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
-      e.preventDefault();
-    }
-  });
-});
-    </script>
-  </body>
+        <div class="demo-section">
+            <div class="demo-content">
+                <h2>See the Magic Happen</h2>
+                <p>Watch as your content transforms into a professional presentation in real-time. Customize and fine-tune with simple controls.</p>
+            </div>
+            <div class="demo-visual">
+                <img src="/api/placeholder/500/300" alt="AutoPrez Demo" />
+            </div>
+        </div>
+    </section>
+</body>
 </html>

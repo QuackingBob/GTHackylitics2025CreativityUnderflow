@@ -285,6 +285,15 @@
             color: var(--text-secondary);
             font-size: 0.9rem;
         }
+        .card-link {
+            text-decoration: none; /* Removes underline */
+            color: inherit; /* Keeps text color unchanged */
+            display: block;
+        }
+
+        .card-link h3 {
+            text-decoration: none; /* Ensures the title inside does not get underlined */
+        }
     </style>
 </head>
 
@@ -299,6 +308,7 @@
                 <h1 style="color: var(--accent); margin-bottom: 1.5rem;">Notes</h1>
                 <ul class="note-list">
                     {% for note in documents %}
+                     
                     <li><a href="{% url 'document_detail' note.id %}">{{ note.title }}</a></li>
                     {% empty %}
                     <li><a href="#">No notes available</a></li>
@@ -313,14 +323,20 @@
             </div>
 
             <div class="card-grid">
+                
                 {% for note in documents %}
+                
+                <a href="{% url 'document_detail' note.id %}" class="card-link">
                 <div class="card">
                     <h3>{{ note.title }}</h3>
                     <p>{{ note.content|truncatechars:100 }}</p>
                     <div class="card-footer">
+                      
                         <span>{{ note.created_at|date:"F j, Y" }}</span>
                     </div>
                 </div>
+                </a>
+            
                 {% endfor %}
             </div>
         </main>
@@ -329,97 +345,30 @@
 
         <div class="modal-overlay" id="createDocumentModal">
             <div class="modal-content">
-                <h2 style="color: var(--accent); margin-bottom: 1.5rem;">Create New Note</h2>
+                <h2 style="color: var(--accent); margin-bottom: 1.5rem;">Create New Presentation</h2>
                 <form id="createDocumentForm">
                     {% csrf_token %}
                     <div class="form-group">
                         <input type="text" id="title" name="title" placeholder="Title" required />
                     </div>
-                    <div class="form-group">
+
+                   <!-- <div class="form-group">
                         <textarea id="content" name="content" placeholder="Content" required></textarea>
-                    </div>
+                    </div>-->
+
                     <div class="form-group">
-                        <input type="file" id="img_content" name="img_content" accept="image/*" />
+                        <input type="file" id="txt_content" name="txt_content" accept="txt/*" />
                     </div>
-                    <button type="submit" class="submit-button">Create Note</button>
+                    <button type="submit" class="submit-button">Create Presentation</button>
                 </form>
             </div>
         </div>
     </div>
 
     <script>
-        // Animations
-        document.addEventListener('DOMContentLoaded', () => {
-            // Animate welcome header
-            gsap.to('.welcome-header', {
-                opacity: 1,
-                y: 0,
-                duration: 1,
-                ease: 'power3.out'
-            });
+       
+    </script> 
+    <script src="{% static 'js/document_list.js' %}"> </script>
 
-            // Animate cards
-            gsap.to('.card', {
-                opacity: 1,
-                y: 0,
-                duration: 0.8,
-                stagger: 0.1,
-                ease: 'power3.out'
-            });
-
-            // Animate sidebar items
-            gsap.to('.note-list li', {
-                opacity: 1,
-                x: 0,
-                duration: 0.5,
-                stagger: 0.05,
-                ease: 'power3.out'
-            });
-        });
-
-        // Modal handling
-        function openModal() {
-            const modal = document.getElementById('createDocumentModal');
-            modal.classList.add('active');
-            gsap.to(modal.querySelector('.modal-content'), {
-                y: 0,
-                opacity: 1,
-                duration: 0.5,
-                ease: 'power3.out'
-            });
-        }
-
-        // Close modal when clicking outside
-        document.querySelector('.modal-overlay').addEventListener('click', (e) => {
-            if (e.target.classList.contains('modal-overlay')) {
-                closeModal();
-            }
-        });
-
-        function closeModal() {
-            const modal = document.getElementById('createDocumentModal');
-            gsap.to(modal.querySelector('.modal-content'), {
-                y: -50,
-                opacity: 0,
-                duration: 0.3,
-                ease: 'power3.in',
-                onComplete: () => {
-                    modal.classList.remove('active');
-                }
-            });
-        }
-
-        // Hover animations for cards
-        document.querySelectorAll('.card').forEach(card => {
-            card.addEventListener('mousemove', (e) => {
-                const rect = card.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-
-                card.style.setProperty('--mouse-x', `${x}px`);
-                card.style.setProperty('--mouse-y', `${y}px`);
-            });
-        });
-    </script>
 </body>
 </html>

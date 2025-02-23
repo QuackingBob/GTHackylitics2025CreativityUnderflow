@@ -111,8 +111,8 @@ class DocumentViewSet(viewsets.ModelViewSet):
             logger.debug(f"Updating state for document {pk}")
             logger.debug(f"Request FILES: {request.FILES}")
             
-            if 'img_content' in request.FILES:
-                document.img_content = request.FILES['img_content']
+            if 'txt_content' in request.FILES:
+                document.txt_content = request.FILES['txt_content']
                 document.save()
                 logger.debug(f"Successfully updated document {pk}")
                 return Response({
@@ -153,6 +153,7 @@ def document_detail(request, document_id):
 
 def document_list(request):
     documents = Document.objects.filter(owner=request.user)
+   
     return render(request, 'app/document_list.html', {'documents': documents})
 
 def render_image(request):
