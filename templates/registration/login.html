@@ -1,136 +1,295 @@
-{% load static %}
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <title>Login</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
-  <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-  <link rel="stylesheet" href="{% static 'css/style.css' %}">
-
+  <title>Login - AutoTex</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  
   <style>
-    .btn-glow {
-      background-color: #f2c744 !important;
-      border: none !important;
-      transition: all 0.3s ease !important;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
 
-    .btn-glow:hover {
-      background-color: #ffd6cc !important;
-      box-shadow: 0 0 20px #ffd6cc !important;
-      transform: translateY(-2px) !important;
+    :root {
+      --primary: #ffa582;
+      --secondary: #ff6b6b;
+      --background: #ffffff;
+      --surface: #fff8f5;
+      --text: #2d3436;
+      --text-secondary: #636e72;
+      --accent: #b23b3b;
     }
 
-    .btn-glow:active {
-      transform: translateY(0) !important;
+    body {
+      font-family: 'Poppins', sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, var(--surface), #ffd6cc);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .login-container {
+      background: var(--background);
+      border-radius: 24px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 450px;
+      padding: 3rem;
+      border: 1px solid rgba(255, 165, 130, 0.2);
+      transition: transform 0.3s ease;
+    }
+
+    .login-container:hover {
+      transform: translateY(-5px);
+    }
+
+    .login-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .login-title {
+      font-size: 2rem;
+      font-weight: 600;
+      background: linear-gradient(45deg, var(--accent), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 1rem;
+    }
+
+    .form-group {
+      position: relative;
+      margin-bottom: 1.5rem;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 1rem;
+      border: 2px solid var(--surface);
+      border-radius: 12px;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      background: var(--surface);
+      color: var(--text);
+    }
+
+    .form-control:focus {
+      border-color: var(--primary);
+      outline: none;
+      background: var(--background);
+    }
+
+    .form-label {
+      position: absolute;
+      left: 1rem;
+      top: 1rem;
+      padding: 0 0.25rem;
+      color: var(--text-secondary);
+      cursor: text;
+      transition: all 0.3s ease;
+      background: var(--surface);
+      border-radius: 4px;
+    }
+
+    .form-control:focus + .form-label,
+    .form-control:not(:placeholder-shown) + .form-label {
+      top: -0.5rem;
+      left: 0.8rem;
+      font-size: 0.8rem;
+      color: var(--accent);
+      background: var(--background);
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 1rem;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(45deg, var(--accent), var(--secondary));
+      color: white;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(255, 107, 107, 0.2);
+    }
+
+    .remember-forgot {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 1.5rem 0;
+    }
+
+    .checkbox-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text-secondary);
+    }
+
+    .forgot-link {
+      color: var(--accent);
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    .forgot-link:hover {
+      color: var(--secondary);
+    }
+
+    .signup-link {
+      text-align: center;
+      margin-top: 2rem;
+      color: var(--text-secondary);
+    }
+
+    .signup-link a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.3s ease;
+    }
+
+    .signup-link a:hover {
+      color: var(--secondary);
+    }
+
+    .alert {
+      padding: 1rem;
+      border-radius: 12px;
+      margin-bottom: 1.5rem;
+      font-size: 0.9rem;
+    }
+
+    .alert-danger {
+      background: #ffe5e5;
+      color: var(--accent);
+      border: 1px solid #ffcccc;
+    }
+
+    .alert-info {
+      background: #e5f6ff;
+      color: #006699;
+      border: 1px solid #cceeff;
+    }
+
+    .toggle-password {
+      position: absolute;
+      right: 1rem;
+      top: 1rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: color 0.3s ease;
+    }
+
+    .toggle-password:hover {
+      color: var(--accent);
+    }
+
+    @media (max-width: 480px) {
+      .login-container {
+        padding: 2rem;
+      }
+
+      .login-title {
+        font-size: 1.75rem;
+      }
     }
   </style>
-
-  {% load static %}
-  <link rel="shortcut icon" type="image/png" href="{% static 'icons/AuToTeX_favicon.png' %}">
 </head>
 
-<body style="background-color: #ffd6cc;">
-  <section class="ftco-section" style="background-color: #ffd6cc;">
-    <div class="container">
-      <div class="row justify-content-center">
-        <div class="col-md-7 col-lg-5">
-          <div class="wrap">
-            <div class="login-wrap p-4 p-md-5">
-              <div class="d-flex">
-                <div class="w-100">
-                  <h3 class="mb-4" style="font-family: Arial, Helvetica, sans-serif; color:#7f2b0a"><b>Sign In</b></h3>
-                </div>
-                <div class="w-100">
-                  <p class="social-media d-flex justify-content-end">
-                    {% comment %} <a href="#" class="social-icon d-flex align-items-center justify-content-center"><span
-                        class="fa fa-facebook"></span></a> {% endcomment %}
-                    {% comment %} <a href="#" class="social-icon d-flex align-items-center justify-content-center"><span
-                        class="fa fa-twitter"></span></a> {% endcomment %}
-                  </p>
-                </div>
-              </div>
-
-              <form method="post" action="{% url 'login' %}" class="signin-form">
-                {% csrf_token %}
-
-                {% if form.errors %}
-                <div class="alert alert-danger mb-4">
-                  <p>Your username and password didn't match. Please try again.</p>
-                </div>
-                {% endif %}
-
-                {% if next %}
-                {% if user.is_authenticated %}
-                <div class="alert alert-info mb-4">
-                  <p>Your account doesn't have access to this page. To proceed, please login with an account that has
-                    access.</p>
-                </div>
-                {% else %}
-                <div class="alert alert-info mb-4">
-                  <p>Please login to see this page.</p>
-                </div>
-                {% endif %}
-                {% endif %}
-
-                <div class="form-group mt-3">
-                  <input type="text" name="{{ form.username.name }}" id="{{ form.username.id_for_label }}"
-                    class="form-control {% if form.username.errors %}is-invalid{% endif %}" required
-                    value="{{ form.username.value|default_if_none:'' }}" placeholder=" " />
-                  <label class="form-control-placeholder" for="{{ form.username.id_for_label }}">Username</label>
-                  {% if form.username.errors %}
-                  <div class="field-error">
-                    {{ form.username.errors }}
-                  </div>
-                  {% endif %}
-                </div>
-
-                <div class="form-group">
-                  <input type="password" name="{{ form.password.name }}" id="{{ form.password.id_for_label }}"
-                    class="form-control {% if form.password.errors %}is-invalid{% endif %}" required placeholder=" " />
-                  <label class="form-control-placeholder" for="{{ form.password.id_for_label }}">Password</label>
-                  <span toggle="#password-field" class="fa fa-fw fa-eye field-icon toggle-password"></span>
-                  {% if form.password.errors %}
-                  <div class="field-error">
-                    {{ form.password.errors }}
-                  </div>
-                  {% endif %}
-                </div>
-
-                <div class="form-group">
-                  <button type="submit" class="form-control btn btn-glow rounded submit px-3">Sign In</button>
-                </div>
-
-                <div class="form-group d-md-flex">
-                  <div class="w-50 text-left">
-                    <label class="checkbox-wrap checkbox-primary mb-0" style="color:#ffa582">Remember Me
-                      <input type="checkbox" name="remember">
-                      <span class="checkmark"></span>
-                    </label>
-                  </div>
-                  <div class="w-50 text-md-right">
-                    <a href="" style="color:#ffa582">Forgot Password</a>
-                  </div>
-                </div>
-
-                <input type="hidden" name="next" value="{{ next }}">
-              </form>
-              <p class="text-center">Not a member? <a style="color:#ffa582" href="{% url 'signup' %}"><b>Sign Up</b></a>
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+<body>
+  <div class="login-container">
+    <div class="login-header">
+      <h1 class="login-title">Welcome Back</h1>
     </div>
-  </section>
 
-  <script src="{% static 'js/jquery.min.js' %}"></script>
-  <script src="{% static 'js/popper.js' %}"></script>
-  <script src="{% static 'js/bootstrap.min.js' %}"></script>
-  <script src="{% static 'js/main.js' %}"></script>
+    <form method="post" action="{% url 'login' %}">
+      {% csrf_token %}
+
+      {% if form.errors %}
+      <div class="alert alert-danger">
+        Your username and password didn't match. Please try again.
+      </div>
+      {% endif %}
+
+      {% if next %}
+        {% if user.is_authenticated %}
+        <div class="alert alert-info">
+          Your account doesn't have access to this page. To proceed, please login with an account that has access.
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+          Please login to see this page.
+        </div>
+        {% endif %}
+      {% endif %}
+
+      <div class="form-group">
+        <input type="text" 
+               name="{{ form.username.name }}" 
+               id="{{ form.username.id_for_label }}"
+               class="form-control {% if form.username.errors %}is-invalid{% endif %}"
+               required
+               placeholder=" "
+               value="{{ form.username.value|default_if_none:'' }}" />
+        <label class="form-label" for="{{ form.username.id_for_label }}">Username</label>
+      </div>
+
+      <div class="form-group">
+        <input type="password" 
+               name="{{ form.password.name }}" 
+               id="{{ form.password.id_for_label }}"
+               class="form-control {% if form.password.errors %}is-invalid{% endif %}"
+               required
+               placeholder=" " />
+        <label class="form-label" for="{{ form.password.id_for_label }}">Password</label>
+        <span toggle="#password-field" class="fa fa-fw fa-eye toggle-password"></span>
+      </div>
+
+      <div class="remember-forgot">
+        <label class="checkbox-wrapper">
+          <input type="checkbox" name="remember">
+          <span>Remember me</span>
+        </label>
+        <a href="#" class="forgot-link">Forgot Password?</a>
+      </div>
+
+      <button type="submit" class="submit-btn">Sign In</button>
+
+      <input type="hidden" name="next" value="{{ next }}">
+
+      <div class="signup-link">
+        Not a member? <a href="{% url 'signup' %}">Sign Up</a>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Toggle password visibility
+      const togglePassword = document.querySelector('.toggle-password');
+      const passwordInput = document.querySelector('input[type="password"]');
+      
+      togglePassword.addEventListener('click', function() {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        this.classList.toggle('fa-eye');
+        this.classList.toggle('fa-eye-slash');
+      });
+    });
+  </script>
 </body>
-
 </html>
