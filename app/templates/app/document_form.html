@@ -18,25 +18,39 @@
             left: 0;
             top: 0;
             height: 100vh;
-            width: 100px;
+            width: 100px; /* Increased width */
             background-color: #ffffff;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            padding: 10px 0;
+            justify-content: space-evenly; /* Distribute space evenly */
+            align-items: stretch;
+            padding: 0; /* Removed padding */
             box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
             z-index: 1000;
         }
 
         .sidebar .button {
-            display: block;
-            margin: 10px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            flex: 1; /* Make buttons grow evenly */
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            padding: 0;
+            transition: background-color 0.2s;
+            margin: 0; /* Removed margin */
+        }
+
+        .sidebar .button:hover {
+            background-color: #f0f0f0;
         }
 
         .container {
             position: fixed;
             top: 0;
-            left: 100px; /* Match sidebar width */
+            left: 100px; /* Match new sidebar width */
             right: 0;
             bottom: 0;
             padding: 0;
@@ -56,8 +70,9 @@
             width: 100%;
             height: 100%;
             margin: 0;
-            padding: 20px;
+            padding: 40px 20px 20px;
             font-size: 30px;
+            line-height: 1.6;
             border: none;
             background-color: transparent;
             resize: none;
@@ -71,11 +86,7 @@
 <body>
     <!-- Sidebar with buttons -->
     <div class="sidebar">
-        <a href="/">
-            <button class="button" id="backButton">
-                <img src="{% static 'icons/back-arrow-direction-down-right-left-up-2-svgrepo-com.svg' %}" style="height: 30px;" />
-            </button>
-        </a>
+        
         <button class="button" id="penButton">
             <img src="{% static 'icons/pen-line-svgrepo-com.svg' %}" style="height: 30px;" />
         </button>
@@ -91,6 +102,12 @@
         <button class="button" id="downloadButton">
             <img src="{% static 'icons/download-minimalistic-svgrepo-com.svg' %}" style="height: 30px;" />
         </button>
+        <!--a href="/documents"-->
+            <button class="button" id="backButton">
+                <img src="{% static 'icons/back-arrow-direction-down-right-left-up-2-svgrepo-com.svg' %}" style="height: 30px;" />
+            </button>
+        <!--/a-->
+       
         <button class="button" id="renderButton">
             <img src="{% static 'icons/document-1-svgrepo-com.svg' %}" style="height: 0px;" />
         </button>
