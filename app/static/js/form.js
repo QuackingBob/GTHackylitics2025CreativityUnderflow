@@ -25,7 +25,7 @@ function saveTextState() {
     console.log(textContent)
     if (!documentId) {
         console.error("No document ID found");
-        return;
+        return false;
     }
 
     const formData = new FormData();
@@ -46,6 +46,7 @@ function saveTextState() {
     })
     .then((data) => {
         console.log("Text state saved successfully:", data);
+        return true
     })
     .catch((error) => {
         console.error("Error saving text state:", error);
@@ -184,7 +185,18 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("undoButton").addEventListener("click", undo);
     document.getElementById("redoButton").addEventListener("click", redo);
     document.getElementById("downloadButton").addEventListener("click", downloadText);
-    document.getElementById("saveButton").addEventListener("click", saveTextState);
+    document.getElementById("saveButton").addEventListener(
+        "click", () =>{
+        const o = saveTextState();
+        if (o){
+            updateButtonState(true);
+        }
+        else{
+            updateButtonState(false);
+           
+            }
+        }
+    );
     document.getElementById("backButton").addEventListener("click", () => {
         saveTextState();
         window.location.href = "/documents/";

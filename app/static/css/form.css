@@ -330,15 +330,15 @@ canvas {
 
 /* Base styles */
 /* Base styles */
-.buttonsave {
+/*.button {
     position: relative;
     padding: 10px;
     border-radius: 5px;
     background-color: #f0f0f0;
     transition: background-color 0.3s ease;
-}
+}*/
 
-.buttonsave img {
+.button img {
     transition: transform 0.3s ease;
 }
 
@@ -366,7 +366,7 @@ canvas {
 }
 
 .xmark {
-    background-image: url('{% static "icons/error-svgrepo-com.svg" %}');
+    background-image: url('{% static "icons/cross-svgrepo-com.svg" %}');
     background-size: cover;
 }
 
