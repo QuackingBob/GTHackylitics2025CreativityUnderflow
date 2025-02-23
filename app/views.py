@@ -29,6 +29,7 @@ from django.http import JsonResponse
 import torch
 
 import tempfile
+import whisper
 import os
 from django.views.decorators.csrf import csrf_exempt
 from django.core.files.storage import default_storage
