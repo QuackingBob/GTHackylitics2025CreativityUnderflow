@@ -93,19 +93,30 @@ def process_audio(request):
         return JsonResponse({"error": "No audio file provided"}, status=400)
 
     try:
+        # First try direct WEBM decoding
         audio_bytes = audio_file.read()
-        audio_segment = AudioSegment.from_file(io.BytesIO(audio_bytes), format="webm")
+        try:
+            audio_segment = AudioSegment.from_file(
+                io.BytesIO(audio_bytes), format="webm"
+            )
+        except Exception as e:
+            logger.warning(f"Direct WEBM decoding failed: {e}, trying with ffmpeg")
+            # If direct decoding fails, try with explicit ffmpeg parameters
+            audio_segment = AudioSegment.from_file(
+                io.BytesIO(audio_bytes),
+                format="webm",
+                codec="opus",
+                parameters=["-strict", "-2"],
+            )
 
         # Convert to mono and 16kHz sample rate
         audio_segment = audio_segment.set_channels(1)
         audio_segment = audio_segment.set_frame_rate(16000)
 
-        # Export as raw PCM (which Whisper expects)
+        # Export as raw PCM
         audio_data = np.array(
             audio_segment.get_array_of_samples(), dtype=np.float32
-        ) / (
-            2**15
-        )  # Correct scaling for pydub
+        ) / (2**15)
 
         audio_queue.put(audio_data)
         logger.debug(f"Current audio queue size: {audio_queue.qsize()}")
@@ -113,7 +124,12 @@ def process_audio(request):
 
     except Exception as e:
         logger.exception("Error processing audio")
-        return JsonResponse({"error": str(e)}, status=500)
+        return JsonResponse(
+            {
+                "error": f"Audio processing failed: {str(e)}. Make sure ffmpeg is installed with webm/opus support."
+            },
+            status=500,
+        )
 
 
 def generate_transcription():
