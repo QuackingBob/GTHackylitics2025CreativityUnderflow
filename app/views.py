@@ -34,6 +34,8 @@ import numpy as np
 import speech_recognition as sr
 from django.shortcuts import render
 from django.http import StreamingHttpResponse
+import whisper
+
 
 # Load the Whisper model (choose small, medium, or large based on available resources)
 # model = whisper.load_model("small")
@@ -59,7 +61,6 @@ def generate_transcription():
                 yield f"data: Error: {str(e)}\n\n"
 
 def start_transcription(request):
-    import whisper
     return StreamingHttpResponse(generate_transcription(), content_type="text/event-stream")
 
 logger = logging.getLogger(__name__)
