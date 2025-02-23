@@ -101,8 +101,8 @@
         <button class="button" id="downloadButton">
             <img src="{% static 'icons/download-minimalistic-svgrepo-com.svg' %}" style="height: 30px;" />
         </button>
-        <button class="button" id="saveButton">
-            <img src="{% static 'icons/save-svgrepo-com.svg' %}" style="height: 30px;" />
+        <button class="button buttonsave" id="saveButton">
+            <img id="saveIcon" src="{% static 'icons/save-svgrepo-com.svg' %}" style="height: 30px;" />
         </button>
         <button class="button" id="backButton">
             <img src="{% static 'icons/back-arrow-direction-down-right-left-up-2-svgrepo-com.svg' %}" style="height: 30px;" />
@@ -126,6 +126,13 @@
     <script src="{% static 'js/form.js' %}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-latex.min.js"></script>
+    <script>
+        window.iconPaths = {
+            checkmark: "{% static 'icons/checkmark-svgrepo-com.svg' %}",
+            error: "{% static 'icons/cross-svgrepo-com.svg' %}",
+            save: "{% static 'icons/save-svgrepo-com.svg' %}",
+        };
+    </script>
 </body>
 
 </html>

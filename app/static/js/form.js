@@ -22,10 +22,10 @@ function getCookie(name) {
 function saveTextState() {
     const textContent = textArea.value;
     const documentId = document.querySelector("[data-document-id]").dataset.documentId;
-    console.log(textContent)
+   
     if (!documentId) {
         console.error("No document ID found");
-        return false;
+        false;
     }
 
     const formData = new FormData();
@@ -45,12 +45,13 @@ function saveTextState() {
         return response.json();
     })
     .then((data) => {
-        console.log("Text state saved successfully:", data);
-        return true
+        console.log("Text state saved successfully:", data['success']);
+        
     })
     .catch((error) => {
         console.error("Error saving text state:", error);
     });
+    
 }
 
 function addToHistory(content) {
@@ -163,14 +164,7 @@ function renderLatex() {
         renderButtonIcon.classList.remove("spinner");
     });
 }
-
-// Initialize text area change tracking
-textArea.addEventListener("input", (e) => {
-    clearTimeout(autoSaveTimeout);
-    addToHistory(e.target.value);
-    autoSaveTimeout = setTimeout(saveTextState, 1000);
-});
-
+ 
 // Button bindings
 document.addEventListener("DOMContentLoaded", () => {
     // Load initial state
@@ -185,18 +179,9 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("undoButton").addEventListener("click", undo);
     document.getElementById("redoButton").addEventListener("click", redo);
     document.getElementById("downloadButton").addEventListener("click", downloadText);
-    document.getElementById("saveButton").addEventListener(
-        "click", () =>{
-        const o = saveTextState();
-        if (o){
-            updateButtonState(true);
-        }
-        else{
-            updateButtonState(false);
-           
-            }
-        }
-    );
+    document.getElementById("saveButton").addEventListener("click", () => {
+        updateButtonState(saveTextState());
+    });
     document.getElementById("backButton").addEventListener("click", () => {
         saveTextState();
         window.location.href = "/documents/";
@@ -204,31 +189,31 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("renderButton").addEventListener("click", renderLatex);
 });
 
-
+// Function to handle button state change based on success or failure
 function updateButtonState(isSaveSuccess) {
     const saveButton = document.getElementById("saveButton");
+    const saveIcon = document.getElementById("saveIcon");
 
     // Clear previous state
     saveButton.classList.remove("green-background", "red-background");
-    document.querySelector(".checkmark")?.style.display = "none";
-    document.querySelector(".xmark")?.style.display = "none";
-    document.querySelector(".xmark")?.classList.remove("shake");
+    saveIcon.style.animation = '';  // Remove shake animation
 
     if (isSaveSuccess) {
-        // If save is successful
+        // If save is successful, change the icon and background
         saveButton.classList.add("green-background");
-        const checkmark = document.createElement('div');
-        checkmark.classList.add('checkmark');
-        saveButton.appendChild(checkmark);
-        checkmark.style.display = 'block';
+        saveIcon.src = window.iconPaths.checkmark;  // Checkmark icon
     } else {
-        // If save fails
+        // If save fails, change the icon and background
         saveButton.classList.add("red-background");
-        const xmark = document.createElement('div');
-        xmark.classList.add('xmark', 'shake');
-        saveButton.appendChild(xmark);
-        xmark.style.display = 'block';
+        saveIcon.src = window.iconPaths.error;  // Error icon
+        saveIcon.style.animation = 'shake 0.5s ease ';  // Apply shake animation
     }
+
+    setTimeout(() => {
+        saveButton.classList.remove("green-background", "red-background");
+        saveIcon.style.animation = '';  // Clear shake animation
+        saveIcon.src = window.iconPaths.save;  // Restore the original save icon
+    }, 600); 
 }
 
 
