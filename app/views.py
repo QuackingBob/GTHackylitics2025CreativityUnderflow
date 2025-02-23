@@ -49,11 +49,36 @@ from django.views.decorators.csrf import csrf_exempt
 import logging
 from queue import Queue
 from pydub import AudioSegment
+from torch.nn.attention import SDPBackend, sdpa_kernel
+from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline
 
 logger = logging.getLogger(__name__)
 
-# Load the Whisper model
-model = whisper.load_model("medium")  # Or "small", "medium", etc.
+# Replace lines 40-44 with:
+device = "cuda:0" if torch.cuda.is_available() else "cpu"
+torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
+
+model_id = "openai/whisper-large-v3-turbo"
+
+model = AutoModelForSpeechSeq2Seq.from_pretrained(
+    model_id, torch_dtype=torch_dtype, low_cpu_mem_usage=True
+).to(device)
+
+# Enable static cache and compile the forward pass
+model.generation_config.cache_implementation = "static"
+model.generation_config.max_new_tokens = 256
+model.forward = torch.compile(model.forward, mode="reduce-overhead", fullgraph=True)
+
+processor = AutoProcessor.from_pretrained(model_id)
+
+pipe = pipeline(
+    "automatic-speech-recognition",
+    model=model,
+    tokenizer=processor.tokenizer,
+    feature_extractor=processor.feature_extractor,
+    torch_dtype=torch_dtype,
+    device=device,
+)
 
 audio_queue = Queue()
 
@@ -92,15 +117,16 @@ def process_audio(request):
 
 
 def generate_transcription():
-    global model
+    global pipe
     try:
         while True:
             audio_data = audio_queue.get()
             if audio_data is None:  # Signal to stop
                 break
 
-            result = model.transcribe(audio_data, fp16=torch.cuda.is_available())
-            text = result["text"].strip()
+            with sdpa_kernel(SDPBackend.MATH):
+                result = pipe({"array": audio_data, "sampling_rate": 16000})
+                text = result["text"].strip()
 
             if text:
                 yield f"data: {text}\n\n"
@@ -252,39 +278,6 @@ class DocumentViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-    @action(detail=True, methods=['patch'], url_path='update-state2')
-    def update_state2(self, request, pk=None):
-        """
-        Custom action to update document state with new text content
-        """
-        try:
-            document = self.get_object()
-            logger.debug(f"Updating state for document {pk}")
-            logger.debug(f"Request data: {request.data}")
-            print(request.data)
-            if 'txt_content' in request.data:
-                document.txt_field = request.data['txt_content']
-                document.txt_content = request.data['txt_content']
-                document.save()
-                logger.debug(f"Successfully updated document {pk}")
-                return Response({
-                    'success': True,
-                    'message': 'State updated successfully'
-                })
-            else:
-                logger.warning(f"No text content provided for document {pk}")
-                return Response({
-                    'success': False,
-                    'error': 'No text content provided'
-                }, status=status.HTTP_400_BAD_REQUEST)    
-        except Exception as e:
-            logger.error(f"Error updating document {pk}: {str(e)}")
-            return Response({
-                'success': False,
-                'error': str(e)
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-       
-
 
 @login_required
 def document_detail(request, document_id):
@@ -329,7 +322,6 @@ def save_text(request, doc_id):
         document.save()
         return JsonResponse({"message": "Saved successfully!"})
     return JsonResponse({"error": "Invalid request"}, status=400)
-
 
 
 @csrf_exempt
