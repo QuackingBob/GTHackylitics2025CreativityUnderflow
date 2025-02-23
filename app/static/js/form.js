@@ -119,7 +119,7 @@ function uploadState() {
     fetch(canvas.toDataURL())
         .then((res) => res.blob())
         .then((blob) => {
-            formData.append("img_content", blob, "canvas_state.png");
+            formData.append("txt_content", blob, "canvas_state.png");
 
 
             return fetch(`/api/documents/${documentId}/update-state/`, {
@@ -510,10 +510,10 @@ async function loadInitialState() {
         const response = await fetch(`/api/documents/${documentId}/`);
         const document = await response.json();
 
-        if (document.img_content) {
-            const img = new Image();
-            img.src = document.img_content;
-            img.onload = function () {
+        if (document.txt_content) {
+            const txt = new File();
+            txt.src = document.txt_content;
+            txt.onload = function () {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 ctx.drawImage(img, 0, 0);
                 saveState(); // Save initial state to history
