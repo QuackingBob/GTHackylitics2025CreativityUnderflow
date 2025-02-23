@@ -165,3 +165,39 @@ function initializeAnimations() {
         ease: 'power3.out'
     });
 }
+
+async function saveTextContent() {
+    const textArea = document.getElementById("large-text-box");
+    if (!textArea) return;
+
+    const textContent = textArea.value;
+    const docId = document.querySelector(".container").dataset.documentId;
+    const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]");
+
+    if (!csrfToken) {
+        console.error("CSRF token not found.");
+        alert("CSRF token missing. Unable to save.");
+        return;
+    }
+
+    try {
+        const response = await fetch(`/save_text/${docId}/`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-CSRFToken": csrfToken.value,
+            },
+            body: `txt_content=${encodeURIComponent(textContent)}`,
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to save document.");
+        }
+
+        const data = await response.json();
+        alert(data.message);
+    } catch (error) {
+        console.error("Error saving:", error);
+        alert("Error saving document.");
+    }
+}

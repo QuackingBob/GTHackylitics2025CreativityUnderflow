@@ -34,7 +34,7 @@ import numpy as np
 import speech_recognition as sr
 from django.shortcuts import render
 from django.http import StreamingHttpResponse
-import whisper
+#import whisper
 
 def section_display(request):
     sections = [
@@ -148,6 +148,7 @@ class DocumentViewSet(viewsets.ModelViewSet):
         serializer.save(owner=self.request.user)        
     
     @action(detail=False, methods=['post'], url_path='save_document')
+
     def save_document(self, request):
         """
         Custom action to handle saving a document with image upload.
@@ -162,15 +163,15 @@ class DocumentViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['patch'], url_path='update-state')
     def update_state(self, request, pk=None):
         """
-        Custom action to update document state with new canvas image
+        Custom action to update document state with new text content
         """
         try:
             document = self.get_object()
             logger.debug(f"Updating state for document {pk}")
-            logger.debug(f"Request FILES: {request.FILES}")
+            logger.debug(f"Request data: {request.data}")
             
-            if 'txt_content' in request.FILES:
-                document.txt_content = request.FILES['txt_content']
+            if 'txt_content' in request.data:
+                document.txt_field = request.data['txt_content']
                 document.save()
                 logger.debug(f"Successfully updated document {pk}")
                 return Response({
@@ -178,19 +179,19 @@ class DocumentViewSet(viewsets.ModelViewSet):
                     'message': 'State updated successfully'
                 })
             else:
-                logger.warning(f"No image content provided for document {pk}")
+                logger.warning(f"No text content provided for document {pk}")
                 return Response({
                     'success': False,
-                    'error': 'No image content provided'
-                }, status=status.HTTP_400_BAD_REQUEST)
-                
+                    'error': 'No text content provided'
+                }, status=status.HTTP_400_BAD_REQUEST)    
         except Exception as e:
             logger.error(f"Error updating document {pk}: {str(e)}")
             return Response({
                 'success': False,
                 'error': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+       
+       
 @login_required
 def document_detail(request, document_id):
     """
@@ -300,3 +301,18 @@ def recompile_latex(request):
 
 def landing(request):
     return render(request, 'frontend/landing.html')
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from .models import Document
+
+@csrf_exempt
+def save_text(request, doc_id):
+    if request.method == "POST":
+        document = Document.objects.get(id=doc_id)
+        
+        text_content = request.POST.get("txt_content", "")
+        document.txt_content = text_content
+        document.save()
+        return JsonResponse({"message": "Saved successfully!"})
+    return JsonResponse({"error": "Invalid request"}, status=400)
