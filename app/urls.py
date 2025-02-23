@@ -41,7 +41,7 @@ urlpatterns = [
         views.presentation_view,
         name="presentation_view",
     ),
-        path('process_audio/', views.process_audio, name='process_audio'),
+        # path('process_audio/', views.process_audio, name='process_audio'),
     path('transcribe/', views.start_transcription, name='start_transcription'),
     path('speak/', views.document_speak, name='document_speak'),
     path("documents/sections/<int:doc_id>/", views.section_display, name="section_display"),

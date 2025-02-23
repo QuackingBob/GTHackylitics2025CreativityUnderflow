@@ -239,7 +239,10 @@ class ScriptGenerator:
                 output = output.replace("```html", "").replace("```", "")
                 f.write(output)
 
-            # process_html(output_path)
+            try:
+                process_html(output_path)
+            except:
+                print("sad")
 
             logger.info(f"Script generated successfully in {task_dir}")
 

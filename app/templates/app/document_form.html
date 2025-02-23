@@ -208,9 +208,9 @@
 
 <body>
   <!-- Sidebar with buttons -->
-   <div class="loading-indicator">Generating presentation...</div>
+    <div class="loading-indicator">Generating presentation...</div>
   <div class="sidebar"> 
-    <button class="button" id="penButton">
+    <button class="button" id="recordButton" onclick="startTranscription()">
       <img src="{% static 'icons/microphone-alt-1-svgrepo-com.svg' %}" style="height: 30px;" />
     </button>
     <button class="button" id="scriptButton">
@@ -283,6 +283,16 @@
         </div>
 
         <input type="hidden" id="doc_id" value="{{ doc_id }}">
+
+        <script>
+            function startTranscription() {
+                const eventSource = new EventSource("/transcribe/");
+                eventSource.onmessage = function(event) {
+                    console.log(event.data)
+                    document.getElementById("large-text-box").value += event.data + "\n";
+                };
+            }
+        </script>
         <script src="{% static 'js/form.js' %}"></script>
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.js"></script>
@@ -292,6 +302,10 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/highlight/highlight.js"></script>
         <script>
             function script_revise() {
+                const renderButton = document.getElementById("scriptButton");
+                const renderButtonIcon = renderButton.querySelector("img");
+                renderButtonIcon.classList.add("spinner");
+
                 console.log("Pressed!")
                 var textValue = document.getElementById("large-text-box").value;
                 var docId = document.getElementById("doc_id").value;
@@ -310,7 +324,10 @@
                         window.location.href = data.redirect_url; 
                     }
                 })
-                .catch(error => console.error("Error:", error));
+                .catch(error => console.error("Error:", error))
+                .finally(() => {
+                    renderButtonIcon.classList.remove("spinner");
+                });
             }
             document
                 .getElementById("scriptButton")

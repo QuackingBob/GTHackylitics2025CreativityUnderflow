@@ -55,122 +55,128 @@ from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline
 
 logger = logging.getLogger(__name__)
 
-# Replace lines 40-44 with:
-device = "cuda:0" if torch.cuda.is_available() else "cpu"
-torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
 
-model_id = "openai/whisper-large-v3"
-
-model = AutoModelForSpeechSeq2Seq.from_pretrained(
-    model_id,
-    torch_dtype=torch_dtype,
-    low_cpu_mem_usage=True,
-    use_safetensors=True,
-    use_flash_attention_2=True,
-).to(device)
-
-# Remove compilation and just use static cache
-model.config.use_cache = True
-model.generation_config.max_new_tokens = 256
-
-processor = AutoProcessor.from_pretrained(model_id)
-
-pipe = pipeline(
-    "automatic-speech-recognition",
-    model=model,
-    tokenizer=processor.tokenizer,
-    feature_extractor=processor.feature_extractor,
-    torch_dtype=torch_dtype,
-    device=device,
-)
-
-audio_queue = Queue()
 recognizer = sr.Recognizer()
+model = whisper.load_model("small")
+
+# Replace lines 40-44 with:
+# device = "cuda:0" if torch.cuda.is_available() else "cpu"
+# torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
+
+# model_id = "openai/whisper-small"
+
+# model = AutoModelForSpeechSeq2Seq.from_pretrained(
+#     model_id,
+#     torch_dtype=torch_dtype,
+#     low_cpu_mem_usage=True,
+#     use_safetensors=True,
+#     use_flash_attention_2=True,
+# ).to(device)
+
+# # Remove compilation and just use static cache
+# model.config.use_cache = True
+# model.generation_config.max_new_tokens = 256
+
+# processor = AutoProcessor.from_pretrained(model_id)
+
+# pipe = pipeline(
+#     "automatic-speech-recognition",
+#     model=model,
+#     tokenizer=processor.tokenizer,
+#     feature_extractor=processor.feature_extractor,
+#     torch_dtype=torch_dtype,
+#     device=device,
+# )
+
+# audio_queue = Queue()
+# recognizer = sr.Recognizer()
 
 
 
-@csrf_exempt
-def process_audio(request):
-    if request.method != "POST":
-        return JsonResponse({"error": "Invalid request method"}, status=405)
+# @csrf_exempt
+# def process_audio(request):
+    # if request.method != "POST":
+    #     return JsonResponse({"error": "Invalid request method"}, status=405)
 
-    audio_file = request.FILES.get("audio")
-    if not audio_file:
-        return JsonResponse({"error": "No audio file provided"}, status=400)
+    # audio_file = request.FILES.get("audio")
+    # if not audio_file:
+    #     return JsonResponse({"error": "No audio file provided"}, status=400)
 
-    try:
-        # First try direct WEBM decoding
-        audio_bytes = audio_file.read()
-        try:
-            audio_segment = AudioSegment.from_file(
-                io.BytesIO(audio_bytes), format="webm"
-            )
-        except Exception as e:
-            logger.warning(f"Direct WEBM decoding failed: {e}, trying with ffmpeg")
-            audio_segment = AudioSegment.from_file(
-                io.BytesIO(audio_bytes),
-                format="webm",
-                codec="opus",
-                parameters=["-strict", "-2"],
-            )
+    # try:
+    #     # First try direct WEBM decoding
+    #     audio_bytes = audio_file.read()
+    #     try:
+    #         audio_segment = AudioSegment.from_file(
+    #             io.BytesIO(audio_bytes), format="webm"
+    #         )
+    #     except Exception as e:
+    #         logger.warning(f"Direct WEBM decoding failed: {e}, trying with ffmpeg")
+    #         audio_segment = AudioSegment.from_file(
+    #             io.BytesIO(audio_bytes),
+    #             format="webm",
+    #             codec="opus",
+    #             parameters=["-strict", "-2"],
+    #         )
 
-        # Convert to mono and 16kHz sample rate
-        audio_segment = audio_segment.set_channels(1)
-        audio_segment = audio_segment.set_frame_rate(16000)
+    #     # Convert to mono and 16kHz sample rate
+    #     audio_segment = audio_segment.set_channels(1)
+    #     audio_segment = audio_segment.set_frame_rate(16000)
 
-        # Normalize audio to prevent very quiet/loud inputs
-        normalized_segment = audio_segment.normalize(headroom=0.1)
+    #     # Normalize audio to prevent very quiet/loud inputs
+    #     normalized_segment = audio_segment.normalize(headroom=0.1)
 
-        # Export as raw PCM with proper bit depth check
-        audio_data = np.array(
-            normalized_segment.get_array_of_samples(), dtype=np.float32
-        )
+    #     # Export as raw PCM with proper bit depth check
+    #     audio_data = np.array(
+    #         normalized_segment.get_array_of_samples(), dtype=np.float32
+    #     )
 
-        # Check if we need to normalize based on bit depth
-        if audio_data.max() > 1.0:
-            audio_data = audio_data / (2**15)  # for 16-bit audio
+    #     # Check if we need to normalize based on bit depth
+    #     if audio_data.max() > 1.0:
+    #         audio_data = audio_data / (2**15)  # for 16-bit audio
 
-        # Clear queue if it's getting too large
-        while audio_queue.qsize() > 5:  # Arbitrary threshold
-            try:
-                audio_queue.get_nowait()
-                logger.warning("Dropping old audio chunk due to queue backup")
-            except Empty:
-                break
+    #     # Clear queue if it's getting too large
+    #     while audio_queue.qsize() > 5:  # Arbitrary threshold
+    #         try:
+    #             audio_queue.get_nowait()
+    #             logger.warning("Dropping old audio chunk due to queue backup")
+    #         except Empty:
+    #             break
 
-        audio_queue.put(audio_data)
-        logger.debug(f"Current audio queue size: {audio_queue.qsize()}")
-        return JsonResponse({"status": "audio received"})
+    #     audio_queue.put(audio_data)
+    #     logger.debug(f"Current audio queue size: {audio_queue.qsize()}")
+    #     return JsonResponse({"status": "audio received"})
 
-    except Exception as e:
-        logger.exception("Error processing audio")
-        return JsonResponse(
-            {
-                "error": f"Audio processing failed: {str(e)}. Make sure ffmpeg is installed with webm/opus support."
-            },
-            status=500,
-        )
+    # except Exception as e:
+    #     logger.exception("Error processing audio")
+    #     return JsonResponse(
+    #         {
+    #             "error": f"Audio processing failed: {str(e)}. Make sure ffmpeg is installed with webm/opus support."
+    #         },
+    #         status=500,
+    #     )
+    # return
 
 
-def generate_transcription():
-    global pipe
-    try:
-        while True:
-            audio_data = audio_queue.get()
-            if audio_data is None:  # Signal to stop
-                break
+# def generate_transcription():
+    # global pipe
+    # try:
+    #     while True:
+    #         audio_data = audio_queue.get()
+    #         if audio_data is None:  # Signal to stop
+    #             break
 
-            # result = model.transcribe(audio_data, fp16=torch.cuda.is_available())
-            # Remove sdpa_kernel context manager and simplify
-            result = pipe({"array": audio_data, "sampling_rate": 16000})
-            text = result["text"].strip()
+    #         # result = model.transcribe(audio_data, fp16=torch.cuda.is_available())
+    #         # Remove sdpa_kernel context manager and simplify
+    #         result = pipe({"array": audio_data, "sampling_rate": 16000})
+    #         text = result["text"].strip()
 
-            if text:
-                yield f"data: {text}\n\n"
+    #         if text:
+    #             yield f"data: {text}\n\n"
 
-    except Exception as e:
-        logger.exception("Error in generate_transcription")
-        yield f"data: Error: {str(e)}\n\n"
+    # except Exception as e:
+    #     logger.exception("Error in generate_transcription")
+    #     yield f"data: Error: {str(e)}\n\n"
+    # return 
 
 # def generate_transcription():
 #     recognizer = sr.Recognizer()
@@ -190,19 +196,38 @@ def generate_transcription():
 #                 yield f"data: Error: {str(e)}\n\n"
 
 
-def start_transcription(request):
-    return StreamingHttpResponse(
-        generate_transcription(), content_type="text/event-stream"
-    )
+# def start_transcription(request):
+#     return StreamingHttpResponse(
+#         generate_transcription(), content_type="text/event-stream"
+#     )
 
 
-def document_speak(request):
-    return render(request, "app/document_speak.html")
+# def document_speak(request):
+#     return render(request, "app/document_speak.html")
 
 
 # Load the Whisper model (choose small, medium, or large based on available resources)
 # model = whisper.load_model("small")
 
+def document_speak(request):
+    return render(request, "app/document_speak.html")
+
+def generate_transcription():
+
+    with sr.Microphone(sample_rate=16000) as source:
+        recognizer.adjust_for_ambient_noise(source)
+        while True:
+            try:
+                print("Listening...")
+                audio = recognizer.listen(source, timeout=5)
+                audio_data = np.frombuffer(audio.get_raw_data(), dtype=np.int16).astype(np.float32) / 32768.0
+                result = model.transcribe(audio_data, fp16=torch.cuda.is_available())
+                yield f"data: {result['text'].strip()}\n\n"
+            except Exception as e:
+                yield f"data: Error: {str(e)}\n\n"
+
+def start_transcription(request):
+    return StreamingHttpResponse(generate_transcription(), content_type="text/event-stream")
 
 class DocumentViewSet(viewsets.ModelViewSet):
     """
