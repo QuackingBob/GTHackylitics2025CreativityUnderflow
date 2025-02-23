@@ -218,10 +218,7 @@ function updateButtonState(isSaveSuccess) {
     if (isSaveSuccess) {
         // If save is successful, change the icon and background
         saveButton.classList.add("green-background");
-        const checkmark = document.createElement('div');
-        checkmark.classList.add('checkmark');
-        saveButton.appendChild(checkmark);
-        checkmark.style.display = 'block';
+        saveIcon.src = window.iconPaths.checkmark;  // Checkmark icon
     } else {
         // If save fails, change the icon and background
         saveButton.classList.add("red-background");
