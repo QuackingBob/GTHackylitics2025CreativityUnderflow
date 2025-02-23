@@ -87,10 +87,10 @@
     <!-- Sidebar with buttons -->
     <div class="sidebar">
         <button class="button" id="penButton">
-            <img src="{% static 'icons/pen-line-svgrepo-com.svg' %}" style="height: 30px;" />
+            <img src="{% static 'icons/microphone-alt-1-svgrepo-com.svg' %}" style="height: 30px;" />
         </button>
         <button class="button" id="eraserButton">
-            <img src="{% static 'icons/eraser-svgrepo-com.svg' %}" style="height: 30px;" />
+            <img src="{% static 'icons/pause-svgrepo-com.svg' %}" style="height: 30px;" />
         </button>
         <button class="button" id="undoButton">
             <img src="{% static 'icons/undo-left-round-svgrepo-com.svg' %}" style="height: 30px;" />
@@ -107,15 +107,15 @@
         <button class="button" id="backButton">
             <img src="{% static 'icons/back-arrow-direction-down-right-left-up-2-svgrepo-com.svg' %}" style="height: 30px;" />
         </button>
-        <button class="button" id="renderButton">
-            <img src="{% static 'icons/document-1-svgrepo-com.svg' %}" style="height: 0px;" />
-        </button>
+        <!-- <button class="button" id="renderButton">
+            <img src="{% static 'icons/document-1-svgrepo-com.svg' %}" style="height: 10px;" />
+        </button> -->
     </div>
 
     <div class="container" data-document-id="{{ document.id }}">
         <!-- Text Input Area -->
         <div class="text-input-area">
-            <textarea id="large-text-box" placeholder="Type your script code here, or tap the microphone and preach!"></textarea>
+            <div id="large-text-box" contenteditable="true" placeholder="Type your script code here, or tap the microphone and preach!"></div>
         </div>
     </div>  
 

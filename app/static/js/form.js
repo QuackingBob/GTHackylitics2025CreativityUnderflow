@@ -69,26 +69,10 @@ function addToHistory(content) {
     historyIndex = history.length - 1;
 }
 
-function undo() {
-    if (historyIndex > 0) {
-        historyIndex--;
-        
-        textArea.value = history[historyIndex];
-        saveTextState();
-    }
-}
-
-function redo() {
-    if (historyIndex < history.length - 1) {
-        historyIndex++;
-     
-        textArea.value = history[historyIndex];
-        saveTextState();
-    }
-}
 
 function downloadText() {
-    const text = textArea.value;
+    const text = textArea.innerText;  // or textArea.textContent
+    console.log(text);
     const blob = new Blob([text], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -99,6 +83,7 @@ function downloadText() {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
 }
+
 
 function clearText() {
     
@@ -181,8 +166,13 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     
     document.getElementById("eraserButton").addEventListener("click", clearText);
-    document.getElementById("undoButton").addEventListener("click", undo);
-    document.getElementById("redoButton").addEventListener("click", redo);
+    document.getElementById("undoButton").addEventListener("click", () => {
+        document.execCommand("undo", false, null);
+    });
+    
+    document.getElementById("redoButton").addEventListener("click", () => {
+        document.execCommand("redo", false, null);
+    });
     document.getElementById("downloadButton").addEventListener("click", downloadText);
     document.getElementById("saveButton").addEventListener("click", saveTextState);
     document.getElementById("backButton").addEventListener("click", () => {
