@@ -1,6 +1,6 @@
 // Text history management
 const textArea = document.getElementById("large-text-box");
-=let history = [];
+let history = [];
 let historyIndex = -1;
 const MAX_HISTORY = 100;
 let autoSaveTimeout;  // For debouncing autosave
