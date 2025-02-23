@@ -266,9 +266,8 @@
             <div class="text-input-area">
                 <textarea
                     id="large-text-box"
-                    placeholder="Type your script code here, or tap the microphone and preach!">
-{{ document.txt_field }}</textarea
-                >
+                    placeholder="Type your script code here, or tap the microphone and preach!"></textarea>
+                    
             </div>
 
             <!-- Presentation Area -->
@@ -282,13 +281,13 @@
                 </div>
             </div>
         </div>
+        <script src="{% static 'js/form.js' %}"></script>
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/notes/notes.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/markdown/markdown.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/highlight/highlight.js"></script>
-
         <script>
             // Initialize Reveal.js with better defaults
 
@@ -376,6 +375,7 @@
                         },
                         body: `txt_content=${encodeURIComponent(textContent)}`,
                     });
+                    
 
                     const data = await response.json();
 
@@ -663,7 +663,7 @@
             }
         </script>
 
-        <script src="{% static 'js/form.js' %}"></script>
+        
         <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-latex.min.js"></script>
         <script>

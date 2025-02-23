@@ -252,6 +252,39 @@ class DocumentViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
+    @action(detail=True, methods=['patch'], url_path='update-state2')
+    def update_state2(self, request, pk=None):
+        """
+        Custom action to update document state with new text content
+        """
+        try:
+            document = self.get_object()
+            logger.debug(f"Updating state for document {pk}")
+            logger.debug(f"Request data: {request.data}")
+            print(request.data)
+            if 'txt_content' in request.data:
+                document.txt_field = request.data['txt_content']
+                document.txt_content = request.data['txt_content']
+                document.save()
+                logger.debug(f"Successfully updated document {pk}")
+                return Response({
+                    'success': True,
+                    'message': 'State updated successfully'
+                })
+            else:
+                logger.warning(f"No text content provided for document {pk}")
+                return Response({
+                    'success': False,
+                    'error': 'No text content provided'
+                }, status=status.HTTP_400_BAD_REQUEST)    
+        except Exception as e:
+            logger.error(f"Error updating document {pk}: {str(e)}")
+            return Response({
+                'success': False,
+                'error': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+       
+
 
 @login_required
 def document_detail(request, document_id):
@@ -296,6 +329,7 @@ def save_text(request, doc_id):
         document.save()
         return JsonResponse({"message": "Saved successfully!"})
     return JsonResponse({"error": "Invalid request"}, status=400)
+
 
 
 @csrf_exempt

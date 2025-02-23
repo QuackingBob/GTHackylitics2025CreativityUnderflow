@@ -40,6 +40,7 @@ function saveTextState(button = false) {
     }
 
     const formData = new FormData();
+     
     formData.append("txt_content", textContent);
 
     fetch(`/api/documents/${documentId}/update-state/`, {
