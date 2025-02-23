@@ -542,9 +542,9 @@
 
             // Add this WebSocket code to the existing <script> block:
             const docId = document.querySelector(".container").dataset.documentId;
-            const wsPath = `/ws/transcribe/${docId}/`;  // Match the Django URL pattern exactly
             const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            const ws = new WebSocket(wsProtocol + window.location.host + wsPath);
+            const wsPath = `${wsProtocol}://${window.location.host}/ws/transcribe/${docId}/`;
+            const ws = new WebSocket(wsPath);
 
             // Audio capture setup
             let mediaRecorder;
