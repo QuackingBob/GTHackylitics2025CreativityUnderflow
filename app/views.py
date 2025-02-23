@@ -39,6 +39,64 @@ from django.http import StreamingHttpResponse
 
 # import whisper
 
+def section_display(request):
+    sections = [
+        {
+            "title": "Introduction and Problem Statement",
+            "text": "Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.",
+            "suggestions": "This section could benefit from a more concise introduction that directly states the problem before diving into examples.",
+            "image_suggestions": "robot performing complex task, robot manipulation in kitchen, long horizon task planning robot"
+        },
+        {
+            "title": "Current Methods and Limitations",
+            "text": "Current methods to solve these long horizon tasks fall largely into two campaigns...",
+            "suggestions": "This section would benefit from clearer explanations of 'task and motion planning' and 'behavioral tasks/RL'.",
+            "image_suggestions": "task and motion planning diagram, reinforcement learning robot diagram, visual language model robot interaction"
+        },
+        {
+            "title": "Proposed Approach and Emphasis",
+            "text": "This raises an employee to perform long-horizon tasks and real- the semantics of natural language instruction...",
+            "suggestions": "This section is very unclear and needs significant improvement.",
+            "image_suggestions": "Natural Language Robot Instruction, Robot low-level skills, generalizable measure of robot task performance"
+        },
+        {
+            "title": "New",
+            "text": "Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.",
+            "suggestions": "This section could benefit from a more concise introduction that directly states the problem before diving into examples.",
+            "image_suggestions": "robot performing complex task, robot manipulation in kitchen, long horizon task planning robot"
+        },
+        {
+            "title": "New2",
+            "text": "Current methods to solve these long horizon tasks fall largely into two campaigns...",
+            "suggestions": "This section would benefit from clearer explanations of 'task and motion planning' and 'behavioral tasks/RL'.",
+            "image_suggestions": "task and motion planning diagram, reinforcement learning robot diagram, visual language model robot interaction"
+        },
+        {
+            "title": "New3",
+            "text": "This raises an employee to perform long-horizon tasks and real- the semantics of natural language instruction...",
+            "suggestions": "This section is very unclear and needs significant improvement.",
+            "image_suggestions": "Natural Language Robot Instruction, Robot low-level skills, generalizable measure of robot task performance"
+        },
+        {
+            "title": "New4",
+            "text": "Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.",
+            "suggestions": "This section could benefit from a more concise introduction that directly states the problem before diving into examples.",
+            "image_suggestions": "robot performing complex task, robot manipulation in kitchen, long horizon task planning robot"
+        },
+        {
+            "title": "New5",
+            "text": "Current methods to solve these long horizon tasks fall largely into two campaigns...",
+            "suggestions": "This section would benefit from clearer explanations of 'task and motion planning' and 'behavioral tasks/RL'.",
+            "image_suggestions": "task and motion planning diagram, reinforcement learning robot diagram, visual language model robot interaction"
+        },
+        {
+            "title": "New6",
+            "text": "This raises an employee to perform long-horizon tasks and real- the semantics of natural language instruction...",
+            "suggestions": "This section is very unclear and needs significant improvement.",
+            "image_suggestions": "Natural Language Robot Instruction, Robot low-level skills, generalizable measure of robot task performance"
+        }
+    ]
+    return render(request, "app/document_feedback.html", {"sections": sections})
 
 # Load the Whisper model (choose small, medium, or large based on available resources)
 # model = whisper.load_model("small")

@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% load static %}
+    <title>Document Sections</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    
+    <style>
+        :root {
+            --primary-color: #7f2b0a;
+            --highlight-color: rgba(226, 130, 74, 0.2);
+            --highlight-glow: rgba(226, 130, 74, 0.2);
+            --sidebar-width: 80px;
+            --popup-width: 380px;
+            --transition-speed: 0.3s;
+        }
+
+        /* Previous styles remain the same until .highlight */
+
+        .highlight {
+            display: inline-block; /* Allows proper multiline wrapping */
+            padding: 2px 4px;
+            cursor: pointer;
+            position: relative;
+            border-radius: 4px;
+            transition: all var(--transition-speed);
+        }
+
+        .highlight::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0; /* Ensure full width */
+            width: 100%;
+            height: 100%; /* Cover full height */
+            background-color: var(--highlight-color);
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            border-radius: 4px;
+            opacity: 0;
+            z-index: -1;
+        }
+
+        .highlight::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0; /* Ensure full width */
+            width: 100%;
+            height: 100%; /* Cover full height */
+            background: radial-gradient(
+                circle at center,
+                var(--highlight-glow) 0%,
+                transparent 70%
+            );
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            border-radius: 4px;
+            opacity: 0;
+            z-index: -2;
+            filter: blur(8px);
+        }
+
+        .highlight:hover::before,
+        .highlight:hover::after {
+            opacity: 1;
+        }
+
+        /* Mouse follower highlight effect */
+        .mouse-follower {
+            position: fixed;
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(
+                circle at center,
+                var(--highlight-glow) 0%,
+                transparent 70%
+            );
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            filter: blur(10px);
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8fafc;
+            display: flex;
+            line-height: 1.6;
+            color: #334155;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100vh;
+            width: var(--sidebar-width);
+            background-color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+            z-index: 1000;
+        }
+
+        .sidebar .button {
+            width: 50px;
+            height: 50px;
+            border: none;
+            background: #f8fafc;
+            margin: 8px 0;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 12px;
+        }
+
+        .sidebar .button:hover {
+            background-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        .sidebar .button:hover img {
+            filter: brightness(0) invert(1);
+        }
+
+        .sidebar img {
+            width: 24px;
+            height: 24px;
+            transition: filter var(--transition-speed);
+        }
+
+        /* Main Content Styling */
+        .container {
+            margin-left: var(--sidebar-width);
+            padding: 40px;
+            width: calc(100% - var(--sidebar-width));
+            min-height: 100vh;
+            max-width: 1200px;
+            margin: 0 auto;
+            margin-left: calc(var(--sidebar-width) + 40px);
+        }
+
+        .section {
+            position: relative;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-radius: 16px;
+            background-color: #ffffff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: all var(--transition-speed);
+        }
+
+        .section:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .section h2 {
+            margin: 0 0 20px 0;
+            color: #1e293b;
+            font-size: 1.5rem;
+        }
+
+        /* .highlight {
+            display: inline;
+            padding: 2px 0;
+            cursor: pointer;
+            background-image: linear-gradient(120deg, rgba(74, 144, 226, 0) 0%, rgba(74, 144, 226, 0) 100%);
+            background-repeat: no-repeat;
+            background-size: 100% 0.2em;
+            background-position: 0 88%;
+            transition: background-size var(--transition-speed);
+        }
+
+        .highlight:hover {
+            background-size: 100% 88%;
+        } */
+
+        /* Hover Popup Styling */
+        .popup {
+            position: absolute;
+            display: none;
+            background: white;
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            font-size: 0.9rem;
+            max-width: 280px;
+            opacity: 0;
+            transition: opacity var(--transition-speed);
+            z-index: 1100;
+        }
+
+        .popup.visible {
+            display: block;
+            opacity: 1;
+        }
+
+        /* Side Panel Styling */
+        .expanded-popup {
+            position: fixed;
+            right: 0;
+            top: 0;
+            width: var(--popup-width);
+            height: 100vh;
+            background: white;
+            box-shadow: -4px 0 25px rgba(0, 0, 0, 0.1);
+            transform: translateX(100%);
+            transition: transform var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .expanded-popup.visible {
+            transform: translateX(0);
+        }
+
+        .expanded-popup .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: transparent;
+            color: #64748b;
+            border: none;
+            width: 40px;
+            height: 40px;
+            font-size: 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .expanded-popup .close-btn:hover {
+            background: #f1f5f9;
+            color: #1e293b;
+        }
+
+        .expanded-popup h3 {
+            margin: 0 0 20px 0;
+            font-size: 1.25rem;
+            color: #1e293b;
+        }
+
+        .expanded-popup ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .expanded-popup ul li {
+            background: #f8fafc;
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: background-color var(--transition-speed);
+        }
+
+        .expanded-popup ul li:hover {
+            background: #f1f5f9;
+        }
+
+        #expandedSuggestions {
+            background: #f8fafc;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <button class="button" title="Edit"><img src="{% static 'icons/pen-line-svgrepo-com.svg' %}" alt="Edit" /></button>
+        <button class="button" title="Clear"><img src="{% static 'icons/eraser-svgrepo-com.svg' %}" alt="Clear" /></button>
+    </div>
+
+    <div class="container">
+        {% for section in sections %}
+        <div class="section">
+            <h2>{{ section.title }}</h2>
+            <p class="highlight" data-suggestions="{{ section.suggestions }}" data-images="{{ section.image_suggestions }}">{{ section.text }}</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="popup" id="popup"></div>
+
+    <div class="expanded-popup" id="expandedPopup">
+        <button class="close-btn" onclick="closePopup()">×</button>
+        <h3 id="expandedTitle">Section Details</h3>
+        <p id="expandedSuggestions"></p>
+        <h3>Image Suggestions</h3>
+        <ul id="expandedImages"></ul>
+    </div>
+
+    <script>
+         document.addEventListener("DOMContentLoaded", function() {
+            const mouseFollower = document.getElementById("mouseFollower");
+            let isOverHighlight = false;
+            let mouseX = 0;
+            let mouseY = 0;
+            let followerX = 0;
+            let followerY = 0;
+
+            // Mouse follower animation
+            function animateMouseFollower() {
+                if (isOverHighlight) {
+                    // Smooth following motion
+                    followerX += (mouseX - followerX) * 0.1;
+                    followerY += (mouseY - followerY) * 0.1;
+                    
+                    mouseFollower.style.transform = `translate(${followerX - 50}px, ${followerY - 50}px)`;
+                }
+                requestAnimationFrame(animateMouseFollower);
+            }
+            animateMouseFollower();
+
+            // Track mouse position
+            document.addEventListener("mousemove", (e) => {
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+            });
+
+            const highlightElements = document.querySelectorAll(".highlight");
+            const popup = document.getElementById("popup");
+            const expandedPopup = document.getElementById("expandedPopup");
+            let popupTimeout;
+
+            highlightElements.forEach(element => {
+                element.addEventListener("mouseenter", function(event) {
+                    isOverHighlight = true;
+                    mouseFollower.style.opacity = "1";
+                    
+                    clearTimeout(popupTimeout);
+                    const suggestions = event.target.getAttribute("data-suggestions");
+                    popup.innerHTML = `<strong>Suggestions:</strong><br>${suggestions}`;
+                    
+                    // Position popup
+                    const rect = event.target.getBoundingClientRect();
+                    const popupRect = popup.getBoundingClientRect();
+                    
+                    let left = event.pageX + 15;
+                    let top = event.pageY + 15;
+                    
+                    if (left + popupRect.width > window.innerWidth) {
+                        left = window.innerWidth - popupRect.width - 15;
+                    }
+                    if (top + popupRect.height > window.innerHeight) {
+                        top = window.innerHeight - popupRect.height - 15;
+                    }
+                    
+                    popup.style.left = `${left}px`;
+                    popup.style.top = `${top}px`;
+                    
+                    popup.style.display = "block";
+                    requestAnimationFrame(() => popup.classList.add("visible"));
+                });
+
+                element.addEventListener("mouseleave", function() {
+                    isOverHighlight = false;
+                    mouseFollower.style.opacity = "0";
+                    
+                    popup.classList.remove("visible");
+                    popupTimeout = setTimeout(() => {
+                        popup.style.display = "none";
+                    }, 300);
+                });
+
+                element.addEventListener("click", function(event) {
+                    const suggestions = event.target.getAttribute("data-suggestions");
+                    const images = event.target.getAttribute("data-images").split(",");
+                    
+                    document.getElementById("expandedTitle").innerText = "Section Details";
+                    document.getElementById("expandedSuggestions").innerText = suggestions;
+                    document.getElementById("expandedImages").innerHTML = images
+                        .map(img => `<li>${img.trim()}</li>`)
+                        .join("");
+
+                    expandedPopup.classList.add("visible");
+                    
+                    // Hide the hover popup when expanding the side panel
+                    popup.classList.remove("visible");
+                    popup.style.display = "none";
+                });
+            });
+        });
+
+        function closePopup() {
+            document.getElementById("expandedPopup").classList.remove("visible");
+        }
+
+        // Close expanded popup when clicking outside
+        document.addEventListener("click", function(event) {
+            const expandedPopup = document.getElementById("expandedPopup");
+            const isClickInside = expandedPopup.contains(event.target);
+            const isHighlight = event.target.classList.contains("highlight");
+            
+            if (!isClickInside && !isHighlight && expandedPopup.classList.contains("visible")) {
+                closePopup();
+            }
+        });
+    </script>
+</body>
+</html>
