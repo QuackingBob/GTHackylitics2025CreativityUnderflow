@@ -63,7 +63,7 @@ REST_FRAMEWORK = {
     ],
 }
 
-ROOT_URLCONF = 'AuToTeX.urls'
+ROOT_URLCONF = 'Impromptu.urls'
 
 TEMPLATES = [
     {
@@ -82,7 +82,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'AuToTeX.wsgi.application'
+WSGI_APPLICATION = 'Impromptu.wsgi.application'
 
 
 # Database
@@ -154,4 +154,4 @@ LOGOUT_REDIRECT_URL = '/login/'
 
 
 # CSRF settings
-CSRF_TRUSTED_ORIGINS = ['https://autotex.tech']
+CSRF_TRUSTED_ORIGINS = ['https://Impromptu.tech']
