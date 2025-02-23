@@ -8,7 +8,7 @@ import re
 from .forms import DocumentForm
 from .models import Document
 import base64
-
+from queue import Empty
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Document
 from django.contrib.auth.decorators import login_required
@@ -47,7 +47,7 @@ from django.shortcuts import render
 from django.http import StreamingHttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import logging
-from queue import Queue
+from queue import Queue, Empty
 from pydub import AudioSegment
 from torch.nn.attention import SDPBackend, sdpa_kernel
 from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline
@@ -104,7 +104,6 @@ def process_audio(request):
             )
         except Exception as e:
             logger.warning(f"Direct WEBM decoding failed: {e}, trying with ffmpeg")
-            # If direct decoding fails, try with explicit ffmpeg parameters
             audio_segment = AudioSegment.from_file(
                 io.BytesIO(audio_bytes),
                 format="webm",
@@ -116,10 +115,25 @@ def process_audio(request):
         audio_segment = audio_segment.set_channels(1)
         audio_segment = audio_segment.set_frame_rate(16000)
 
-        # Export as raw PCM
+        # Normalize audio to prevent very quiet/loud inputs
+        normalized_segment = audio_segment.normalize(headroom=0.1)
+
+        # Export as raw PCM with proper bit depth check
         audio_data = np.array(
-            audio_segment.get_array_of_samples(), dtype=np.float32
-        ) / (2**15)
+            normalized_segment.get_array_of_samples(), dtype=np.float32
+        )
+
+        # Check if we need to normalize based on bit depth
+        if audio_data.max() > 1.0:
+            audio_data = audio_data / (2**15)  # for 16-bit audio
+
+        # Clear queue if it's getting too large
+        while audio_queue.qsize() > 5:  # Arbitrary threshold
+            try:
+                audio_queue.get_nowait()
+                logger.warning("Dropping old audio chunk due to queue backup")
+            except Empty:
+                break
 
         audio_queue.put(audio_data)
         logger.debug(f"Current audio queue size: {audio_queue.qsize()}")
