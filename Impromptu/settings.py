@@ -84,6 +84,16 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'Impromptu.wsgi.application'
 
+ASGI_APPLICATION = "Impromptu.asgi.application"  # Replace your_project
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],  # Your Redis host and port
+        },
+    },
+}
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases

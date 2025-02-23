@@ -39,100 +39,75 @@ from django.http import StreamingHttpResponse
 
 # import whisper
 
+
 def section_display(request):
     sections = [
         {
             "title": "Introduction and Problem Statement",
             "text": "Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.",
             "suggestions": "This section could benefit from a more concise introduction that directly states the problem before diving into examples.",
-            "image_suggestions": "robot performing complex task, robot manipulation in kitchen, long horizon task planning robot"
+            "image_suggestions": "robot performing complex task, robot manipulation in kitchen, long horizon task planning robot",
         },
         {
             "title": "Current Methods and Limitations",
             "text": "Current methods to solve these long horizon tasks fall largely into two campaigns...",
             "suggestions": "This section would benefit from clearer explanations of 'task and motion planning' and 'behavioral tasks/RL'.",
-            "image_suggestions": "task and motion planning diagram, reinforcement learning robot diagram, visual language model robot interaction"
+            "image_suggestions": "task and motion planning diagram, reinforcement learning robot diagram, visual language model robot interaction",
         },
         {
             "title": "Proposed Approach and Emphasis",
             "text": "This raises an employee to perform long-horizon tasks and real- the semantics of natural language instruction...",
             "suggestions": "This section is very unclear and needs significant improvement.",
-            "image_suggestions": "Natural Language Robot Instruction, Robot low-level skills, generalizable measure of robot task performance"
+            "image_suggestions": "Natural Language Robot Instruction, Robot low-level skills, generalizable measure of robot task performance",
         },
         {
             "title": "New",
             "text": "Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.",
             "suggestions": "This section could benefit from a more concise introduction that directly states the problem before diving into examples.",
-            "image_suggestions": "robot performing complex task, robot manipulation in kitchen, long horizon task planning robot"
+            "image_suggestions": "robot performing complex task, robot manipulation in kitchen, long horizon task planning robot",
         },
         {
             "title": "New2",
             "text": "Current methods to solve these long horizon tasks fall largely into two campaigns...",
             "suggestions": "This section would benefit from clearer explanations of 'task and motion planning' and 'behavioral tasks/RL'.",
-            "image_suggestions": "task and motion planning diagram, reinforcement learning robot diagram, visual language model robot interaction"
+            "image_suggestions": "task and motion planning diagram, reinforcement learning robot diagram, visual language model robot interaction",
         },
         {
             "title": "New3",
             "text": "This raises an employee to perform long-horizon tasks and real- the semantics of natural language instruction...",
             "suggestions": "This section is very unclear and needs significant improvement.",
-            "image_suggestions": "Natural Language Robot Instruction, Robot low-level skills, generalizable measure of robot task performance"
+            "image_suggestions": "Natural Language Robot Instruction, Robot low-level skills, generalizable measure of robot task performance",
         },
         {
             "title": "New4",
             "text": "Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.",
             "suggestions": "This section could benefit from a more concise introduction that directly states the problem before diving into examples.",
-            "image_suggestions": "robot performing complex task, robot manipulation in kitchen, long horizon task planning robot"
+            "image_suggestions": "robot performing complex task, robot manipulation in kitchen, long horizon task planning robot",
         },
         {
             "title": "New5",
             "text": "Current methods to solve these long horizon tasks fall largely into two campaigns...",
             "suggestions": "This section would benefit from clearer explanations of 'task and motion planning' and 'behavioral tasks/RL'.",
-            "image_suggestions": "task and motion planning diagram, reinforcement learning robot diagram, visual language model robot interaction"
+            "image_suggestions": "task and motion planning diagram, reinforcement learning robot diagram, visual language model robot interaction",
         },
         {
             "title": "New6",
             "text": "This raises an employee to perform long-horizon tasks and real- the semantics of natural language instruction...",
             "suggestions": "This section is very unclear and needs significant improvement.",
-            "image_suggestions": "Natural Language Robot Instruction, Robot low-level skills, generalizable measure of robot task performance"
-        }
+            "image_suggestions": "Natural Language Robot Instruction, Robot low-level skills, generalizable measure of robot task performance",
+        },
     ]
     return render(request, "app/document_feedback.html", {"sections": sections})
+
 
 # Load the Whisper model (choose small, medium, or large based on available resources)
 # model = whisper.load_model("small")
 
 
-def document_speak(request):
-    return render(request, "app/document_speak.html")
-
-
-def generate_transcription():
-
-    recognizer = sr.Recognizer()
-    model = whisper.load_model("small")
-
-    with sr.Microphone(sample_rate=16000) as source:
-        recognizer.adjust_for_ambient_noise(source)
-        while True:
-            try:
-                print("Listening...")
-                audio = recognizer.listen(source, timeout=5)
-                audio_data = (
-                    np.frombuffer(audio.get_raw_data(), dtype=np.int16).astype(
-                        np.float32
-                    )
-                    / 32768.0
-                )
-                result = model.transcribe(audio_data, fp16=torch.cuda.is_available())
-                yield f"data: {result['text'].strip()}\n\n"
-            except Exception as e:
-                yield f"data: Error: {str(e)}\n\n"
-
-
-def start_transcription(request):
-    return StreamingHttpResponse(
-        generate_transcription(), content_type="text/event-stream"
-    )
+@login_required
+def document_list(request):
+    documents = Document.objects.filter(owner=request.user)
+    return render(request, "app/document_list.html", {"documents": documents})
 
 
 logger = logging.getLogger(__name__)
@@ -235,49 +210,6 @@ def document_detail(request, document_id):
     return render(request, "app/document_form.html", {"document": document})
 
 
-def document_list(request):
-    documents = Document.objects.filter(owner=request.user)
-
-    return render(request, "app/document_list.html", {"documents": documents})
-
-
-def render_image(request):
-    # get image from request
-    image = request.FILES["image"]
-    # save image to static folder
-    with open("static/image.png", "wb") as f:
-        f.write(image.read())
-
-    generator = LaTeXGenerator()
-    img = cv2.imread("static/image.png")
-    latex = generator.generate(img)
-    latex = re.sub(r"```latex\n", "", latex)
-    latex = re.sub(r"```", "", latex)
-    with open("static/output.tex", "w") as f:
-        f.write(latex)
-
-    # output output.pdf to static folder
-    subprocess.run(["pdflatex", "-output-directory=static", "static/output.tex"])
-    pdf_path = "static/output.pdf"
-    if os.path.exists(pdf_path):
-        # Return both PDF and latex content in JSON response
-        with open(pdf_path, "rb") as pdf_file:
-            pdf_content = pdf_file.read()
-            pdf_base64 = base64.b64encode(pdf_content).decode("utf-8")
-
-            return JsonResponse({"pdf": pdf_base64, "latex": latex})
-
-        return JsonResponse({"error": "PDF generation failed"}, status=500)
-
-
-def get_latex(request):
-    try:
-        with open("static/output.tex", "r") as f:
-            latex_content = f.read()
-        return HttpResponse(latex_content, content_type="text/plain")
-    except FileNotFoundError:
-        return HttpResponse(status=404)
-
 
 def recompile_latex(request):
     if request.method == "POST":
@@ -353,8 +285,8 @@ def render_presentation(request, doc_id):
         )
     return JsonResponse({"error": "Invalid request"}, status=400)
 
+
 @login_required
 def presentation_view(request, document_id):
     document = get_object_or_404(Document, id=document_id, owner=request.user)
-    return render(request, 'app/presentation.html', {'document': document})
-
+    return render(request, "app/presentation.html", {"document": document})

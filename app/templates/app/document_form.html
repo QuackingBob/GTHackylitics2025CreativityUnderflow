@@ -539,6 +539,62 @@
                     document.getElementById("presentation-content").innerHTML
                 );
             }
+
+            // Add this WebSocket code to the existing <script> block:
+            const docId = document.querySelector(".container").dataset.documentId;
+            const wsPath = `/ws/transcribe/${docId}/`;  // Match the Django URL pattern exactly
+            const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const ws = new WebSocket(wsProtocol + window.location.host + wsPath);
+
+            // Audio capture setup
+            let mediaRecorder;
+            let audioChunks = [];
+            const textArea = document.getElementById("large-text-box");
+
+            ws.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                if(data.transcription) {
+                    textArea.value += data.transcription + " ";
+                    saveContent(false); // Auto-save with existing function
+                }
+            };
+
+            async function startRecording() {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    
+                    mediaRecorder.ondataavailable = (event) => {
+                        if (event.data.size > 0) {
+                            ws.send(event.data);
+                        }
+                    };
+                    
+                    mediaRecorder.start(1000); // Capture chunks every 1 second
+                    document.getElementById("penButton").classList.add("recording");
+                    loadingIndicator.textContent = "Listening...";
+                } catch (err) {
+                    console.error("Error accessing microphone:", err);
+                    alert("Microphone access denied. Please enable microphone permissions.");
+                }
+            }
+
+            function stopRecording() {
+                if (mediaRecorder && mediaRecorder.state !== "inactive") {
+                    mediaRecorder.stop();
+                    document.getElementById("penButton").classList.remove("recording");
+                    loadingIndicator.textContent = "Generating presentation...";
+                }
+            }
+
+            // Update penButton click handler
+            document.getElementById("penButton").addEventListener("click", function() {
+                if (this.classList.contains("recording")) {
+                    stopRecording();
+                } else {
+                    startRecording();
+                }
+            });
         </script>
 
         <script src="{% static 'js/form.js' %}"></script>
