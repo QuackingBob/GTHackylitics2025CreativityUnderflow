@@ -8,7 +8,7 @@ import dotenv
 from bs4 import BeautifulSoup
 from pathlib import Path
 import logging
-import google.generativeai as genai
+#import google.generativeai as genai
 import requests
 import urllib.request
 

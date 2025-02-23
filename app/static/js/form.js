@@ -32,6 +32,7 @@ function saveTextState(button = false) {
         return;
     }
     const documentId = documentIdElem.dataset.documentId;
+   
     if (!documentId) {
         console.error("No document ID found");
         if (button) {
@@ -42,7 +43,7 @@ function saveTextState(button = false) {
     const formData = new FormData();
     formData.append("txt_content", textContent);
 
-    fetch(`/api/documents/${documentId}/update-state/`, {
+    fetch(`/api/documents/${documentId}/update-state2/`, {
         method: "PATCH",
         headers: {
             "X-CSRFToken": getCookie("csrftoken"),
