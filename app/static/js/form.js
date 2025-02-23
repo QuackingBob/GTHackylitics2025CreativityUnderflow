@@ -176,12 +176,45 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("downloadButton").addEventListener("click", downloadText);
     document.getElementById("saveButton").addEventListener("click", saveTextState);
     document.getElementById("backButton").addEventListener("click", () => {
+        saveTextState();
         window.location.href = "/documents/";
     });
     document.getElementById("renderButton").addEventListener("click", renderLatex);
 });
 
+
+function updateButtonState(isSaveSuccess) {
+    const saveButton = document.getElementById("saveButton");
+
+    // Clear previous state
+    saveButton.classList.remove("green-background", "red-background");
+    document.querySelector(".checkmark")?.style.display = "none";
+    document.querySelector(".xmark")?.style.display = "none";
+    document.querySelector(".xmark")?.classList.remove("shake");
+
+    if (isSaveSuccess) {
+        // If save is successful
+        saveButton.classList.add("green-background");
+        const checkmark = document.createElement('div');
+        checkmark.classList.add('checkmark');
+        saveButton.appendChild(checkmark);
+        checkmark.style.display = 'block';
+    } else {
+        // If save fails
+        saveButton.classList.add("red-background");
+        const xmark = document.createElement('div');
+        xmark.classList.add('xmark', 'shake');
+        saveButton.appendChild(xmark);
+        xmark.style.display = 'block';
+    }
+}
+
+
 // Add keyboard shortcuts
+
+
+
+
 document.addEventListener("keydown", (e) => {
     if (e.ctrlKey || e.metaKey) { // Support for both Windows/Linux and Mac
         switch(e.key.toLowerCase()) {
