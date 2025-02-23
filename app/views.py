@@ -57,14 +57,15 @@ model = whisper.load_model("medium")  # Or "small", "medium", etc.
 
 audio_queue = Queue()
 
+
 @csrf_exempt
 def process_audio(request):
-    if request.method != 'POST':
-        return JsonResponse({'error': 'Invalid request method'}, status=405)
+    if request.method != "POST":
+        return JsonResponse({"error": "Invalid request method"}, status=405)
 
-    audio_file = request.FILES.get('audio')
+    audio_file = request.FILES.get("audio")
     if not audio_file:
-        return JsonResponse({'error': 'No audio file provided'}, status=400)
+        return JsonResponse({"error": "No audio file provided"}, status=400)
 
     try:
         audio_bytes = audio_file.read()
@@ -75,15 +76,21 @@ def process_audio(request):
         audio_segment = audio_segment.set_frame_rate(16000)
 
         # Export as raw PCM (which Whisper expects)
-        audio_data = np.array(audio_segment.get_array_of_samples(), dtype=np.float32) / (2**15) # Correct scaling for pydub
+        audio_data = np.array(
+            audio_segment.get_array_of_samples(), dtype=np.float32
+        ) / (
+            2**15
+        )  # Correct scaling for pydub
 
         audio_queue.put(audio_data)
         logger.debug(f"Current audio queue size: {audio_queue.qsize()}")
-        return JsonResponse({'status': 'audio received'})
+        return JsonResponse({"status": "audio received"})
 
     except Exception as e:
         logger.exception("Error processing audio")
-        return JsonResponse({'error': str(e)}, status=500)
+        return JsonResponse({"error": str(e)}, status=500)
+
+
 def generate_transcription():
     global model
     try:
@@ -93,7 +100,7 @@ def generate_transcription():
                 break
 
             result = model.transcribe(audio_data, fp16=torch.cuda.is_available())
-            text = result['text'].strip()
+            text = result["text"].strip()
 
             if text:
                 yield f"data: {text}\n\n"
@@ -102,8 +109,12 @@ def generate_transcription():
         logger.exception("Error in generate_transcription")
         yield f"data: Error: {str(e)}\n\n"
 
+
 def start_transcription(request):
-    return StreamingHttpResponse(generate_transcription(), content_type="text/event-stream")
+    return StreamingHttpResponse(
+        generate_transcription(), content_type="text/event-stream"
+    )
+
 
 def document_speak(request):
     return render(request, "app/document_speak.html")
@@ -171,7 +182,6 @@ def section_display(request):
 
 # Load the Whisper model (choose small, medium, or large based on available resources)
 # model = whisper.load_model("small")
-
 
 
 class DocumentViewSet(viewsets.ModelViewSet):
