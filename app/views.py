@@ -58,16 +58,19 @@ logger = logging.getLogger(__name__)
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
 
-model_id = "openai/whisper-large-v3-turbo"
+model_id = "openai/whisper-large-v3"
 
 model = AutoModelForSpeechSeq2Seq.from_pretrained(
-    model_id, torch_dtype=torch_dtype, low_cpu_mem_usage=True
+    model_id,
+    torch_dtype=torch_dtype,
+    low_cpu_mem_usage=True,
+    use_safetensors=True,
+    use_flash_attention_2=True,
 ).to(device)
 
-# Enable static cache and compile the forward pass
-model.generation_config.cache_implementation = "static"
+# Remove compilation and just use static cache
+model.config.use_cache = True
 model.generation_config.max_new_tokens = 256
-model.forward = torch.compile(model.forward, mode="reduce-overhead", fullgraph=True)
 
 processor = AutoProcessor.from_pretrained(model_id)
 
@@ -140,9 +143,9 @@ def generate_transcription():
             if audio_data is None:  # Signal to stop
                 break
 
-            with sdpa_kernel(SDPBackend.MATH):
-                result = pipe({"array": audio_data, "sampling_rate": 16000})
-                text = result["text"].strip()
+            # Remove sdpa_kernel context manager and simplify
+            result = pipe({"array": audio_data, "sampling_rate": 16000})
+            text = result["text"].strip()
 
             if text:
                 yield f"data: {text}\n\n"
