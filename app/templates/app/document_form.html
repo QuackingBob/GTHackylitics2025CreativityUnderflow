@@ -82,11 +82,11 @@
     }
 
     /* Placeholder styling for contenteditable element */
-    #large-text-box:empty:before {
+  /*  #large-text-box:empty:before {
       content: attr(placeholder);
       color: #aaa;
       pointer-events: none;
-    }
+    } */
   </style>
 </head>
 
@@ -124,7 +124,7 @@
   <div class="container" data-document-id="{{ document.id }}">
     <!-- Text Input Area -->
     <div class="text-input-area">
-      <div id="large-text-box" contenteditable="true" placeholder="Type your script code here, or tap the microphone and preach!"></div>
+        <textarea id="large-text-box" placeholder="Type your script code here, or tap the microphone and preach!"></textarea>
     </div>
   </div>
 
