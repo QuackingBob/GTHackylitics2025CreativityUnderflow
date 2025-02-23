@@ -321,17 +321,23 @@ def save_text(request, doc_id):
     return JsonResponse({"error": "Invalid request"}, status=400)
 
 
+
 @csrf_exempt
 def render_presentation(request, doc_id):
     if request.method == "POST":
-        document = Document.objects.get(id=doc_id)
-        text_content = request.POST.get("txt_content", "")
+        try:
+            document = get_object_or_404(Document, id=doc_id)
+            text_content = request.POST.get("txt_content", "")
 
-        # Generate presentation from text content
-        generator = PresentationGenerator()
-        result = generator.generate(text_content)
-        document.presentation_html = result["html"]
-        document.save()
+            if not text_content:
+                return JsonResponse({"error": "No text content provided"}, status=400)
+
+            # Generate presentation from text content
+            generator = PresentationGenerator()
+            try:
+                result = generator.generate(text_content)
+                document.presentation_html = result["html"]
+                document.save()
 
                 return JsonResponse(
                     {
