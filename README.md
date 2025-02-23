@@ -1,61 +1,77 @@
-# AuToTeX: From Handwriting to LaTeX in Seconds 
+# Impromptu: Present Like a Pro, Instantly
 
-## The Problem We've All Faced 
-*How many times have you been here?* You're sitting in a class or meeting, **frantically scribbling** information on paper. In the moment, it seems manageable, but later...
-- Your handwriting looks like ancient hieroglyphics
-- Papers are scattered everywhere
-- You wish you had a clean, professional PDF
-- Those complex math equations? Good luck typing those up!
+## The Modern Presenter's Challenge
+*Ever found yourself in these situations?* You're about to give an important presentation, but:
+- You're scrambling to prepare slides at the last minute
+- Your speaking points are scattered and disorganized
+- You wish you had a clean record of what you said
+- You need professional-looking slides, fast!
 
-## Why Hasn't This Been Solved? 
-We've had OCR (Optical Character Recognition) tools for *many decades*. They're great for converting typed text, but what about:
-- Mathematical equations?
-- Scientific symbols?
-- Complex diagrams?
-- All those symbols you can't find on a standard keyboard?
+## Why Traditional Solutions Fall Short
+We've had presentation software for decades. But what about when you need to:
+- Present on the fly?
+- Convert your words into organized content?
+- Create beautiful slides in real-time?
+- Transform existing transcripts into presentations?
 
-But, the information is *right there* – just in the wrong format!
+The content is *in your head* – you just need a seamless way to present it!
 
-## Enter AuToTeX 
-We've created what you've been waiting for: a **sleek, minimalist webapp** that automatically converts your handwritten documents into professional LaTeX files!
+## Introducing Impromptu
+We've created the future of presentations: a **powerful, intuitive platform** that turns your words into stunning slides while you speak!
 
-### What to like about AuToTeX?
-- **Simple**: Just upload or jot down your handwritten notes
-- **Smart**: Recognizes complex mathematical notation
-- **Swift**: Converts in seconds
-- **Stylish**: Outputs clean, professional LaTeX documents
+### What Makes Impromptu Special?
+- **Live Transcription**: Your words are captured and organized in real-time
+- **Smart Categorization**: Automatically structures your content into logical sections
+- **Instant Slides**: Creates beautiful, modern slides as you speak
+- **Flexible Input**: Start from live speech or upload existing transcripts
 
-No more spending hours transcribing your notes. No more hunting for that elusive integral symbol. Just your thoughts, professionally formatted and ready to share!
+No more late nights building decks. No more struggling with design elements. Just your ideas, professionally presented and beautifully captured!
 
-## Our Tech Stack 
+## Our Technology Stack
 
-Here's what makes AuToTeX tick:
+Here's what powers Impromptu:
 
-- **Django** for the robust backend
-- **Bootstrap** for slick styling
-- **HTML/CSS/JS** to tie it all together
-- **LangChain + OpenAI API** for the AI magic
-- **MathTex** to compile our TeX
+- **Real-time Speech Processing** for accurate transcription
+- **AI-Powered Organization** for smart content structuring
+- **Modern Design System** for beautiful slide generation
+- **React Frontend** for smooth user experience
+- **Cloud Infrastructure** for reliable performance
 
-## Challenges we ran into
-**Syncing and Saving Uploaded Image Files:** We struggled with managing edit histories and ensuring new edits were correctly compiled.
+## Key Features
 
-**Dynamic Code Editor:** Integrating an editable LaTeX interpreter required balancing real-time synchronization between frontend and backend interfaces.
+### Live Presentation Mode
+- Real-time speech-to-text conversion
+- Automatic slide generation
+- Smart content organization
+- Beautiful, modern design templates
 
-## Accomplishments We're Proud Of 
-**Developed a solution that addresses real needs:** Making online documents easier in a world that needs them!
+### Transcript Upload
+- Support for existing transcripts
+- Quick conversion to presentations
+- Easy editing and refinement
+- Export to multiple formats
 
-**Integrating AI:** And it will only grow more helpful and popular! 
+## Getting Started
+1. **Live Presentation**
+   - Click "Start Presenting"
+   - Speak naturally
+   - Watch as your slides generate in real-time
+   - Review and refine afterward
 
-**Excelled in the UI design:** Our team of mostly backend developers crushed it with a minmalist design. 😎
+2. **Transcript Upload**
+   - Upload your transcript
+   - Choose a design template
+   - Review the generated slides
+   - Make any desired adjustments
 
-## What we learned
-**AI has fundamentaly changed creativity:** Creating new products has never been easier. Learning new frameworks has never been easier. And the capabilities of AI have only grown more impressive.
+## Future Roadmap
+- **Enhanced Design Templates**: More beautiful, customizable options
+- **Multi-language Support**: Present in any language
+- **Advanced Analytics**: Gain insights into your presentation style
+- **Collaboration Features**: Work together in real-time
+- **Export Options**: More formats and integration options
 
-We're all very optimistic about AI. The rate at which it has improved is truly mindblowing.
-****
+## Join the Future of Presenting
+Impromptu is more than just a presentation tool – it's a revolution in how we share ideas. Whether you're a teacher, business professional, or anyone who needs to present with impact, Impromptu helps you deliver your message with confidence and style.
 
-## What's next for AuToTex
-**Expanding to more users:** We truly believe our webapp will be useful for many outside of this hackathon and has many real world applications.
-
-**Syncing the Canvas and Code:** Users should be able to bounce back and forth between debugging code and stylus 🖊️  
+Visit our website to get started and transform your presentation experience today!
