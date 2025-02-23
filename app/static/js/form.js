@@ -22,7 +22,7 @@ function getCookie(name) {
 }
 
 // Save current text state to the server
-function saveTextState() {
+function saveTextState(button=false) {
     const textContent = textArea.value;
     const documentIdElem = document.querySelector("[data-document-id]");
     if (!documentIdElem) {
@@ -33,7 +33,10 @@ function saveTextState() {
    ;
     if (!documentId) {
         console.error("No document ID found");
-        false;
+        if (button){
+        updateButtonState(false);
+        }
+       
     }
 
     const formData = new FormData();
@@ -54,11 +57,17 @@ function saveTextState() {
     })
     .then((data) => {
         console.log("Text state saved successfully:", data['success']);
+        if (button){
+        updateButtonState(data['success']);
+        }
+      //  return data['success']
         
     })
     .catch((error) => {
         console.error("Error saving text state:", error);
-        updateButtonState(false);
+        if(button){
+            updateButtonState(false);
+        }
     });
     
 }
@@ -197,7 +206,10 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("redoButton").addEventListener("click", redo);
     document.getElementById("downloadButton").addEventListener("click", downloadText);
     document.getElementById("saveButton").addEventListener("click", () => {
-        updateButtonState(saveTextState());
+         
+        saveTextState(true);
+      //  console.log(out)
+      //  updateButtonState(out);
     });
     document.getElementById("backButton").addEventListener("click", () => {
         saveTextState();
@@ -219,6 +231,7 @@ function updateButtonState(isSaveSuccess) {
         // If save is successful, change the icon and background
         saveButton.classList.add("green-background");
         saveIcon.src = window.iconPaths.checkmark;  // Checkmark icon
+        saveIcon.style.animation = 'shake 0.5s ease ';
     } else {
         // If save fails, change the icon and background
         saveButton.classList.add("red-background");

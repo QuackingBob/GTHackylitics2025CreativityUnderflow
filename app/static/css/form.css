@@ -353,11 +353,11 @@ canvas {
 }
 
 .green-background {
-    background-color: #d9ead3; /* Green background for success */
+    background-color: #d9ead3 !important; /* Ensures it takes precedence */
 }
 
 .red-background {
-    background-color: #f44336; /* Red background for failure */
+    background-color: #f8cccc !important; /* Red background for failure */
 }
 
 .checkmark, .xmark {
