@@ -197,29 +197,6 @@
             }
         </style>
     </head>
-    #large-text-box {
-      width: 100%;
-      height: 100%;
-      margin: 0;
-      padding: 40px 20px 20px;
-      font-size: 30px;
-      line-height: 1.6;
-      border: none;
-      background-color: transparent;
-      resize: none;
-      outline: none;
-      overflow-y: auto;
-      box-sizing: border-box;
-    }
-
-    /* Placeholder styling for contenteditable element */
-    #large-text-box:empty:before {
-      content: attr(placeholder);
-      color: #aaa;
-      pointer-events: none;
-    }
-  </style>
-</head>
 
     <body>
         <!-- Add loading indicator -->
@@ -299,36 +276,6 @@
                     style="height: 30px" />
             </button>
         </div>
-<body>
-  <!-- Sidebar with buttons -->
-  <div class="sidebar">
-    <button class="button" id="penButton">
-      <img src="{% static 'icons/microphone-alt-1-svgrepo-com.svg' %}" style="height: 30px;" />
-    </button>
-    <button class="button" id="eraserButton">
-      <img src="{% static 'icons/pause-svgrepo-com.svg' %}" style="height: 30px;" />
-    </button>
-    <button class="button" id="undoButton">
-      <img src="{% static 'icons/undo-left-round-svgrepo-com.svg' %}" style="height: 30px;" />
-    </button>
-    <button class="button" id="redoButton">
-      <img src="{% static 'icons/undo-right-round-svgrepo-com.svg' %}" style="height: 30px;" />
-    </button>
-    <button class="button" id="downloadButton">
-      <img src="{% static 'icons/download-minimalistic-svgrepo-com.svg' %}" style="height: 30px;" />
-    </button>
-    <button class="button buttonsave" id="saveButton">
-      <img id="saveIcon" src="{% static 'icons/save-svgrepo-com.svg' %}" style="height: 30px;" />
-    </button>
-    <button class="button" id="backButton">
-      <img src="{% static 'icons/back-arrow-direction-down-right-left-up-2-svgrepo-com.svg' %}" style="height: 30px;" />
-    </button>
-    <!-- Uncomment if needed
-    <button class="button" id="renderButton">
-      <img src="{% static 'icons/document-1-svgrepo-com.svg' %}" style="height: 10px;" />
-    </button>
-    -->
-  </div>
 
         <div
             class="container"
@@ -359,12 +306,6 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/notes/notes.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/markdown/markdown.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/highlight/highlight.js"></script>
-  <div class="container" data-document-id="{{ document.id }}">
-    <!-- Text Input Area -->
-    <div class="text-input-area">
-      <div id="large-text-box" contenteditable="true" placeholder="Type your script code here, or tap the microphone and preach!"></div>
-    </div>
-  </div>
 
         <script>
             // Initialize Reveal.js with better defaults
@@ -592,12 +533,14 @@
                 isPresentationMode = enter;
             }
 
-
             // Present button click handler
-            document.getElementById('presentButton').addEventListener('click', function() {
-                const docId = document.querySelector('.container').dataset.documentId;
-                window.location.href = `/documents/${docId}/present/`;  // Change window.open to location.href
-            });
+            document
+                .getElementById("presentButton")
+                .addEventListener("click", function () {
+                    const docId =
+                        document.querySelector(".container").dataset.documentId;
+                    window.location.href = `/documents/${docId}/present/`; // Change window.open to location.href
+                });
 
             // Exit presentation handlers
             exitButton.addEventListener("click", function () {
@@ -631,22 +574,16 @@
                 );
             }
         </script>
+
+        <script src="{% static 'js/form.js' %}"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-latex.min.js"></script>
+        <script>
+            window.iconPaths = {
+                checkmark: "{% static 'icons/checkmark-svgrepo-com (1).svg' %}",
+                error: "{% static 'icons/cross-svgrepo-com.svg' %}",
+                save: "{% static 'icons/save-svgrepo-com.svg' %}",
+            };
+        </script>
     </body>
-  <script>
-    // Your additional JavaScript can go here if needed
-  </script>
-
-    <script src="{% static 'js/form.js' %}"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-latex.min.js"></script>
-    <script>
-        window.iconPaths = {
-
-            checkmark: "{% static 'icons/checkmark-svgrepo-com (1).svg' %}",
-            error: "{% static 'icons/cross-svgrepo-com.svg' %}",
-            save: "{% static 'icons/save-svgrepo-com.svg' %}",
-        };
-    </script>
-</body>
-
 </html>
