@@ -13,24 +13,35 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from . import views
 
 router = DefaultRouter()
-router.register(r'documents', views.DocumentViewSet)
+router.register(r"documents", views.DocumentViewSet)
 
 urlpatterns = [
     path("render", views.render_image),
-    path('get_latex', views.get_latex, name='get_latex'),
-    path('recompile_latex', views.recompile_latex, name='recompile_latex'),
-    path('api/', include(router.urls)), 
-    path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    path('save_text/<int:doc_id>/', views.save_text, name='save_text'),
-    path('documents/', views.document_list, name='document_list'),
-    path('', views.landing, name='document_list'),
-    path('documents/<int:document_id>/', views.document_detail, name='document_detail'),
-    path('documents/speak/', views.document_speak, name='document_speak'),
-    path('transcribe/', views.start_transcription, name='transcribe')
+    path("get_latex", views.get_latex, name="get_latex"),
+    path("recompile_latex", views.recompile_latex, name="recompile_latex"),
+    path("api/", include(router.urls)),
+    path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),
+    path("save_text/<int:doc_id>/", views.save_text, name="save_text"),
+    path("documents/", views.document_list, name="document_list"),
+    path("", views.landing, name="document_list"),
+    path("documents/<int:document_id>/", views.document_detail, name="document_detail"),
+    path("documents/speak/", views.document_speak, name="document_speak"),
+    path("transcribe/", views.start_transcription, name="transcribe"),
+    path(
+        "render_presentation/<int:doc_id>/",
+        views.render_presentation,
+        name="render_presentation",
+    ),
+    path(
+        "documents/<int:document_id>/present/",
+        views.presentation_view,
+        name="presentation_view",
+    ),
 ]

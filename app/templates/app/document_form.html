@@ -5,7 +5,7 @@
         <meta
             name="viewport"
             content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-        {% load static %} {% csrf_token %}
+        {% load static %}
         <title>Impromptu</title>
         <link
             rel="stylesheet"
@@ -268,6 +268,13 @@
                     src="{% static 'icons/document-1-svgrepo-com.svg' %}"
                     style="height: 30px" />
             </button>
+            <button
+                class="button"
+                id="renderButton">
+                <img
+                    src="{% static 'icons/render-svgrepo-com.svg' %}"
+                    style="height: 30px" />
+            </button>
         </div>
 
         <div
@@ -302,34 +309,22 @@
 
         <script>
             // Initialize Reveal.js with better defaults
-            let deck = null;
-
-            function initializeReveal() {
-                if (deck) {
-                    deck.destroy();
-                }
-
-                deck = new Reveal({
-                    hash: true,
-                    transition: "slide",
-                    autoAnimate: true,
-                    plugins: [RevealMarkdown, RevealHighlight, RevealNotes],
-                    width: "100%",
-                    height: "100%",
-                    margin: 0.1,
-                    minScale: 0.2,
-                    maxScale: 2.0,
-                    controls: true,
-                    progress: true,
-                    center: true,
-                    touch: true,
-                });
-                deck.initialize();
-                return deck;
-            }
-
-            // Initialize reveal on page load
-            let reveal = initializeReveal();
+            let reveal = new Reveal({
+                hash: true,
+                transition: "slide",
+                autoAnimate: true,
+                plugins: [RevealMarkdown, RevealHighlight, RevealNotes],
+                width: "100%",
+                height: "100%",
+                margin: 0.1,
+                minScale: 0.2,
+                maxScale: 2.0,
+                controls: true,
+                progress: true,
+                center: true,
+                touch: true,
+            });
+            reveal.initialize();
 
             let saveTimeout;
             let lastSavedContent =
@@ -353,42 +348,46 @@
             // Function to update presentation content
             function updatePresentation(html) {
                 try {
-                    if (!html || typeof html !== "string") {
-                        console.warn("Invalid presentation HTML received");
-                        return;
-                    }
-
                     const presentationContent = document.getElementById(
                         "presentation-content"
                     );
-                    if (!presentationContent) {
-                        console.error("Presentation content element not found");
-                        return;
-                    }
-
-                    // Safely update the content
                     presentationContent.innerHTML = html;
 
-                    // Reinitialize Reveal.js
-                    reveal = initializeReveal();
+                    // Force Reveal.js to recognize the new content
+                    reveal.sync();
+                    reveal.slide(0);
+
+                    // Additional configuration after content update
+                    reveal.configure({
+                        width: "100%",
+                        height: "100%",
+                        margin: 0.1,
+                        minScale: 0.2,
+                        maxScale: 2.0,
+                    });
+
+                    // Make sure all fragments are properly initialized
+                    Array.from(
+                        presentationContent.querySelectorAll(".fragment")
+                    ).forEach((fragment) => {
+                        fragment.classList.add("fade-up");
+                    });
+
+                    reveal.sync();
                 } catch (error) {
                     console.error("Error updating presentation:", error);
                 }
             }
 
-            // Function to save content with debouncing and error handling
-            let saveInProgress = false;
+            // Function to save content
             async function saveContent(showLoading = false) {
                 const docId =
                     document.querySelector(".container").dataset.documentId;
                 const textContent =
                     document.getElementById("large-text-box").value;
-                const csrfToken = document.querySelector(
-                    "[name=csrfmiddlewaretoken]"
-                ).value;
 
-                // Don't save if content hasn't changed or a save is in progress
-                if (textContent === lastSavedContent || saveInProgress) {
+                // Don't save if content hasn't changed
+                if (textContent === lastSavedContent) {
                     return;
                 }
 
@@ -396,44 +395,81 @@
                     loadingIndicator.style.display = "block";
                 }
 
-                saveInProgress = true;
-
                 try {
                     const response = await fetch(`/save_text/${docId}/`, {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/x-www-form-urlencoded",
-                            "X-CSRFToken": csrfToken,
                         },
                         body: `txt_content=${encodeURIComponent(textContent)}`,
                     });
 
-                    if (!response.ok) {
-                        throw new Error(
-                            `HTTP error! status: ${response.status}`
-                        );
-                    }
-
                     const data = await response.json();
 
-                    if (data.presentation_html) {
+                    if (response.ok) {
                         lastSavedContent = textContent;
                         showSuccessMessage();
-                        updatePresentation(data.presentation_html);
                     } else {
-                        console.warn("No presentation HTML in response");
+                        console.error("Save failed:", data.error);
+                        alert("Failed to save: " + data.error);
                     }
                 } catch (error) {
                     console.error("Error saving:", error);
                     alert("Error saving changes. Please try again.");
                 } finally {
                     loadingIndicator.style.display = "none";
-                    saveInProgress = false;
                 }
             }
 
-            // Debounced auto-save with longer delay
-            let saveTimeout = null;
+            // Function to render presentation
+            async function renderPresentation() {
+                const docId =
+                    document.querySelector(".container").dataset.documentId;
+                const textContent =
+                    document.getElementById("large-text-box").value;
+                loadingIndicator.style.display = "block";
+                loadingIndicator.textContent = "Generating presentation...";
+
+                try {
+                    const response = await fetch(
+                        `/render_presentation/${docId}/`,
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type":
+                                    "application/x-www-form-urlencoded",
+                            },
+                            body: `txt_content=${encodeURIComponent(
+                                textContent
+                            )}`,
+                        }
+                    );
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        if (data.presentation_html) {
+                            updatePresentation(data.presentation_html);
+                            successMessage.textContent =
+                                "Presentation rendered successfully!";
+                            showSuccessMessage();
+                            // Automatically enter presentation mode after rendering
+                            togglePresentationMode(true);
+                        }
+                    } else {
+                        console.error("Render failed:", data.error);
+                        alert("Failed to render: " + data.error);
+                    }
+                } catch (error) {
+                    console.error("Error rendering:", error);
+                    alert("Error rendering presentation. Please try again.");
+                } finally {
+                    loadingIndicator.style.display = "none";
+                    loadingIndicator.textContent = "Generating presentation...";
+                }
+            }
+
+            // Auto-save on text change
             document
                 .getElementById("large-text-box")
                 .addEventListener("input", function (e) {
@@ -442,7 +478,7 @@
                     }
                     saveTimeout = setTimeout(() => {
                         saveContent(false);
-                    }, 3000);
+                    }, 2000);
                 });
 
             // Save button click handler
@@ -497,12 +533,12 @@
                 isPresentationMode = enter;
             }
 
+            
             // Present button click handler
-            document
-                .getElementById("presentButton")
-                .addEventListener("click", function () {
-                    togglePresentationMode(true);
-                });
+            document.getElementById('presentButton').addEventListener('click', function() {
+                const docId = document.querySelector('.container').dataset.documentId;
+                window.location.href = `/documents/${docId}/present/`;  // Change window.open to location.href
+            });
 
             // Exit presentation handlers
             exitButton.addEventListener("click", function () {
@@ -521,6 +557,11 @@
                 .addEventListener("click", function () {
                     window.location.href = "/document_list/";
                 });
+
+            // Add event listener for render button
+            document
+                .getElementById("renderButton")
+                .addEventListener("click", renderPresentation);
 
             // Initialize presentation if there's content
             if (

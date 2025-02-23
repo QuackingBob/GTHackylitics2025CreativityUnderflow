@@ -1,5 +1,5 @@
 // Text history management
-const textArea = document.getElementById("large-text-box")
+const textArea = document.getElementById("large-text-box");
 let history = [];
 let historyIndex = -1;
 const MAX_HISTORY = 100;
@@ -11,7 +11,9 @@ function getCookie(name) {
         for (let i = 0; i < cookies.length; i++) {
             const cookie = cookies[i].trim();
             if (cookie.substring(0, name.length + 1) === name + "=") {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                cookieValue = decodeURIComponent(
+                    cookie.substring(name.length + 1)
+                );
                 break;
             }
         }
@@ -21,8 +23,9 @@ function getCookie(name) {
 
 function saveTextState() {
     const textContent = textArea.value;
-    const documentId = document.querySelector("[data-document-id]").dataset.documentId;
-    console.log(textContent)
+    const documentId =
+        document.querySelector("[data-document-id]").dataset.documentId;
+    console.log(textContent);
     if (!documentId) {
         console.error("No document ID found");
         return;
@@ -38,18 +41,18 @@ function saveTextState() {
         },
         body: formData,
     })
-    .then((response) => {
-        if (!response.ok) {
-            throw new Error("Network response was not ok");
-        }
-        return response.json();
-    })
-    .then((data) => {
-        console.log("Text state saved successfully:", data);
-    })
-    .catch((error) => {
-        console.error("Error saving text state:", error);
-    });
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error("Network response was not ok");
+            }
+            return response.json();
+        })
+        .then((data) => {
+            console.log("Text state saved successfully:", data);
+        })
+        .catch((error) => {
+            console.error("Error saving text state:", error);
+        });
 }
 
 function addToHistory(content) {
@@ -57,22 +60,22 @@ function addToHistory(content) {
     if (historyIndex < history.length - 1) {
         history = history.slice(0, historyIndex + 1);
     }
-    
+
     // Add new state to history
     history.push(content);
-    
+
     // Keep history within maximum size
     if (history.length > MAX_HISTORY) {
         history.shift();
     }
-    
+
     historyIndex = history.length - 1;
 }
 
 function undo() {
     if (historyIndex > 0) {
         historyIndex--;
-        
+
         textArea.value = history[historyIndex];
         saveTextState();
     }
@@ -81,7 +84,7 @@ function undo() {
 function redo() {
     if (historyIndex < history.length - 1) {
         historyIndex++;
-     
+
         textArea.value = history[historyIndex];
         saveTextState();
     }
@@ -101,25 +104,23 @@ function downloadText() {
 }
 
 function clearText() {
-    
     textArea.value = "";
     addToHistory("");
     saveTextState();
 }
 
 async function loadInitialState() {
-    const documentId = document.querySelector("[data-document-id]").dataset.documentId;
-     
+    const documentId =
+        document.querySelector("[data-document-id]").dataset.documentId;
+
     if (!documentId) return;
 
     try {
         const response = await fetch(`/api/documents/${documentId}/`);
         const document = await response.json();
-        
 
         if (document.txt_field) {
-             
-            console.log(document.txt_field)
+            console.log(document.txt_field);
             textArea.value = document.txt_field;
             addToHistory(document.txt_content);
         } else {
@@ -147,20 +148,20 @@ function renderLatex() {
         },
         body: formData,
     })
-    .then(response => {
-        if (!response.ok) throw new Error("Network response was not ok");
-        return response.json();
-    })
-    .then(data => {
-        // Handle the response - this depends on your application's needs
-        console.log("Render successful:", data);
-    })
-    .catch(error => {
-        console.error("Error rendering:", error);
-    })
-    .finally(() => {
-        renderButtonIcon.classList.remove("spinner");
-    });
+        .then((response) => {
+            if (!response.ok) throw new Error("Network response was not ok");
+            return response.json();
+        })
+        .then((data) => {
+            // Handle the response - this depends on your application's needs
+            console.log("Render successful:", data);
+        })
+        .catch((error) => {
+            console.error("Error rendering:", error);
+        })
+        .finally(() => {
+            renderButtonIcon.classList.remove("spinner");
+        });
 }
 
 // Initialize text area change tracking
@@ -179,23 +180,29 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("penButton").addEventListener("click", () => {
         /* Can be used for formatting or other features */
     });
-    
-    document.getElementById("eraserButton").addEventListener("click", clearText);
+
+    document
+        .getElementById("eraserButton")
+        .addEventListener("click", clearText);
     document.getElementById("undoButton").addEventListener("click", undo);
     document.getElementById("redoButton").addEventListener("click", redo);
-    document.getElementById("downloadButton").addEventListener("click", downloadText);
-    document.getElementById("saveButton").addEventListener("click", saveTextState);
+    document
+        .getElementById("downloadButton")
+        .addEventListener("click", downloadText);
+    document
+        .getElementById("saveButton")
+        .addEventListener("click", saveTextState);
     document.getElementById("backButton").addEventListener("click", () => {
         window.location.href = "/documents/";
     });
-    document.getElementById("renderButton").addEventListener("click", renderLatex);
 });
 
 // Add keyboard shortcuts
 document.addEventListener("keydown", (e) => {
-    if (e.ctrlKey || e.metaKey) { // Support for both Windows/Linux and Mac
-        switch(e.key.toLowerCase()) {
-            case 'z':
+    if (e.ctrlKey || e.metaKey) {
+        // Support for both Windows/Linux and Mac
+        switch (e.key.toLowerCase()) {
+            case "z":
                 if (e.shiftKey) {
                     e.preventDefault();
                     redo();
@@ -204,11 +211,11 @@ document.addEventListener("keydown", (e) => {
                     undo();
                 }
                 break;
-            case 'y':
+            case "y":
                 e.preventDefault();
                 redo();
                 break;
-            case 's':
+            case "s":
                 e.preventDefault();
                 saveTextState();
                 break;

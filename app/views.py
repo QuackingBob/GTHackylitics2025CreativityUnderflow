@@ -21,6 +21,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 import logging
+from django.views.decorators.csrf import csrf_exempt
+from autopres import PresentationGenerator
 
 from django.shortcuts import render
 from django.http import JsonResponse
@@ -34,17 +36,20 @@ import numpy as np
 import speech_recognition as sr
 from django.shortcuts import render
 from django.http import StreamingHttpResponse
-#import whisper
+
+# import whisper
 
 
 # Load the Whisper model (choose small, medium, or large based on available resources)
 # model = whisper.load_model("small")
 
+
 def document_speak(request):
     return render(request, "app/document_speak.html")
 
+
 def generate_transcription():
-    
+
     recognizer = sr.Recognizer()
     model = whisper.load_model("small")
 
@@ -54,21 +59,32 @@ def generate_transcription():
             try:
                 print("Listening...")
                 audio = recognizer.listen(source, timeout=5)
-                audio_data = np.frombuffer(audio.get_raw_data(), dtype=np.int16).astype(np.float32) / 32768.0
+                audio_data = (
+                    np.frombuffer(audio.get_raw_data(), dtype=np.int16).astype(
+                        np.float32
+                    )
+                    / 32768.0
+                )
                 result = model.transcribe(audio_data, fp16=torch.cuda.is_available())
                 yield f"data: {result['text'].strip()}\n\n"
             except Exception as e:
                 yield f"data: Error: {str(e)}\n\n"
 
+
 def start_transcription(request):
-    return StreamingHttpResponse(generate_transcription(), content_type="text/event-stream")
+    return StreamingHttpResponse(
+        generate_transcription(), content_type="text/event-stream"
+    )
+
 
 logger = logging.getLogger(__name__)
+
 
 class DocumentViewSet(viewsets.ModelViewSet):
     """
     A viewset that provides the standard actions
     """
+
     queryset = Document.objects.all()
     serializer_class = DocumentSerializer
     parser_classes = (MultiPartParser, FormParser)
@@ -80,17 +96,16 @@ class DocumentViewSet(viewsets.ModelViewSet):
         by filtering against the authenticated user.
         """
         user = self.request.user
-        return Document.objects.filter(owner=user).order_by('-created_at')
+        return Document.objects.filter(owner=user).order_by("-created_at")
 
     def perform_create(self, serializer):
         """
         Associates the document with the authenticated user.
         """
         print(self.request.data)
-        serializer.save(owner=self.request.user)        
-    
-    @action(detail=False, methods=['post'], url_path='save_document')
+        serializer.save(owner=self.request.user)
 
+    @action(detail=False, methods=["post"], url_path="save_document")
     def save_document(self, request):
         """
         Custom action to handle saving a document with image upload.
@@ -98,42 +113,51 @@ class DocumentViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             serializer.save(owner=request.user)
-            return Response({'success': True, 'document_id': serializer.instance.id})
+            return Response({"success": True, "document_id": serializer.instance.id})
         else:
-            return Response({'success': False, 'errors': serializer.errors}, status=400)
+            return Response({"success": False, "errors": serializer.errors}, status=400)
 
-    @action(detail=True, methods=['patch'], url_path='update-state')
+    @action(detail=True, methods=["patch"], url_path="update-state")
     def update_state(self, request, pk=None):
         """
-        Custom action to update document state with new text content
+        Custom action to update document state with new text content and generate presentation
         """
         try:
             document = self.get_object()
             logger.debug(f"Updating state for document {pk}")
             logger.debug(f"Request data: {request.data}")
-            
-            if 'txt_content' in request.data:
-                document.txt_field = request.data['txt_content']
+
+            if "txt_content" in request.data:
+                document.txt_field = request.data["txt_content"]
+
+                # Generate presentation from text content
+                generator = PresentationGenerator()
+                result = generator.generate(document.txt_field)
+                document.presentation_html = result["html"]
+
                 document.save()
                 logger.debug(f"Successfully updated document {pk}")
-                return Response({
-                    'success': True,
-                    'message': 'State updated successfully'
-                })
+                return Response(
+                    {
+                        "success": True,
+                        "message": "State updated successfully",
+                        "presentation_html": document.presentation_html,
+                    }
+                )
             else:
                 logger.warning(f"No text content provided for document {pk}")
-                return Response({
-                    'success': False,
-                    'error': 'No text content provided'
-                }, status=status.HTTP_400_BAD_REQUEST)    
+                return Response(
+                    {"success": False, "error": "No text content provided"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
         except Exception as e:
             logger.error(f"Error updating document {pk}: {str(e)}")
-            return Response({
-                'success': False,
-                'error': str(e)
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-       
-       
+            return Response(
+                {"success": False, "error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+
 @login_required
 def document_detail(request, document_id):
     """
@@ -148,113 +172,131 @@ def document_detail(request, document_id):
     """
     # Retrieve the document ensuring it belongs to the logged-in user
     document = get_object_or_404(Document, id=document_id, owner=request.user)
-    
+
     # Render the template with the document context
-    return render(request, 'app/document_form.html', {'document': document})
+    return render(request, "app/document_form.html", {"document": document})
+
 
 def document_list(request):
     documents = Document.objects.filter(owner=request.user)
-   
-    return render(request, 'app/document_list.html', {'documents': documents})
+
+    return render(request, "app/document_list.html", {"documents": documents})
+
 
 def render_image(request):
     # get image from request
-    image = request.FILES['image']
+    image = request.FILES["image"]
     # save image to static folder
-    with open('static/image.png', 'wb') as f:
+    with open("static/image.png", "wb") as f:
         f.write(image.read())
 
-    
     generator = LaTeXGenerator()
-    img = cv2.imread('static/image.png')
+    img = cv2.imread("static/image.png")
     latex = generator.generate(img)
-    latex = re.sub(r'```latex\n', '', latex)
-    latex = re.sub(r'```', '', latex)
-    with open('static/output.tex', 'w') as f:
+    latex = re.sub(r"```latex\n", "", latex)
+    latex = re.sub(r"```", "", latex)
+    with open("static/output.tex", "w") as f:
         f.write(latex)
 
     # output output.pdf to static folder
-    subprocess.run(['pdflatex', '-output-directory=static', 'static/output.tex'])
-    pdf_path = 'static/output.pdf'
+    subprocess.run(["pdflatex", "-output-directory=static", "static/output.tex"])
+    pdf_path = "static/output.pdf"
     if os.path.exists(pdf_path):
         # Return both PDF and latex content in JSON response
-        with open(pdf_path, 'rb') as pdf_file:
+        with open(pdf_path, "rb") as pdf_file:
             pdf_content = pdf_file.read()
-            pdf_base64 = base64.b64encode(pdf_content).decode('utf-8')
-            
-            return JsonResponse({
-                'pdf': pdf_base64,
-                'latex': latex
-            })
+            pdf_base64 = base64.b64encode(pdf_content).decode("utf-8")
 
-        return JsonResponse({
-            'error': 'PDF generation failed'
-        }, status=500)
+            return JsonResponse({"pdf": pdf_base64, "latex": latex})
+
+        return JsonResponse({"error": "PDF generation failed"}, status=500)
+
 
 def get_latex(request):
     try:
-        with open('static/output.tex', 'r') as f:
+        with open("static/output.tex", "r") as f:
             latex_content = f.read()
-        return HttpResponse(latex_content, content_type='text/plain')
+        return HttpResponse(latex_content, content_type="text/plain")
     except FileNotFoundError:
         return HttpResponse(status=404)
 
+
 def recompile_latex(request):
-    if request.method == 'POST':
-        latex = request.POST['latex']
-        with open('static/output.tex', 'w') as f:
+    if request.method == "POST":
+        latex = request.POST["latex"]
+        with open("static/output.tex", "w") as f:
             f.write(latex)
 
         try:
             subprocess.run(
-                ['pdflatex', '-output-directory=static', 'static/output.tex'],
+                ["pdflatex", "-output-directory=static", "static/output.tex"],
                 check=True,
                 stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE
+                stderr=subprocess.PIPE,
             )
-            pdf_path = 'static/output.pdf'
-            
+            pdf_path = "static/output.pdf"
+
             # Check if the PDF was created successfully
             if os.path.exists(pdf_path):
                 # Return both PDF and latex content in JSON response
-                with open(pdf_path, 'rb') as pdf_file:
+                with open(pdf_path, "rb") as pdf_file:
                     pdf_content = pdf_file.read()
-                    pdf_base64 = base64.b64encode(pdf_content).decode('utf-8')
-                    
-                return JsonResponse({
-                    'pdf': pdf_base64,
-                    'latex': latex
-                })
-            else:
-                return JsonResponse({
-                    'error': 'PDF compilation failed'
-                }, status=500)
-        
-        except subprocess.CalledProcessError as e:
-            return JsonResponse({
-                'error': f"Compilation error: {e.stderr.decode()}"
-            }, status=500)
-    
-    return JsonResponse({
-        'error': "Invalid request method."
-    }, status=405)
+                    pdf_base64 = base64.b64encode(pdf_content).decode("utf-8")
 
-    
+                return JsonResponse({"pdf": pdf_base64, "latex": latex})
+            else:
+                return JsonResponse({"error": "PDF compilation failed"}, status=500)
+
+        except subprocess.CalledProcessError as e:
+            return JsonResponse(
+                {"error": f"Compilation error: {e.stderr.decode()}"}, status=500
+            )
+
+    return JsonResponse({"error": "Invalid request method."}, status=405)
+
 
 def landing(request):
-    return render(request, 'frontend/landing.html')
+    return render(request, "frontend/landing.html")
+
 
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .models import Document
 
+
 @csrf_exempt
 def save_text(request, doc_id):
     if request.method == "POST":
         document = Document.objects.get(id=doc_id)
-        
         text_content = request.POST.get("txt_content", "")
-        document.txt_content = text_content
+        document.txt_field = text_content
         document.save()
         return JsonResponse({"message": "Saved successfully!"})
     return JsonResponse({"error": "Invalid request"}, status=400)
+
+
+@csrf_exempt
+def render_presentation(request, doc_id):
+    if request.method == "POST":
+        document = Document.objects.get(id=doc_id)
+        text_content = request.POST.get("txt_content", "")
+
+        # Generate presentation from text content
+        generator = PresentationGenerator()
+        result = generator.generate(text_content)
+        document.presentation_html = result["html"]
+        document.save()
+
+        return JsonResponse(
+            {
+                "message": "Rendered successfully!",
+                "presentation_html": document.presentation_html,
+            }
+        )
+    return JsonResponse({"error": "Invalid request"}, status=400)
+
+@login_required
+def presentation_view(request, document_id):
+    document = get_object_or_404(Document, id=document_id, owner=request.user)
+    return render(request, 'app/presentation.html', {'document': document})
+
