@@ -1,9 +1,11 @@
 // Text history management
-const textArea = document.getElementById("large-text-box")
+const textArea = document.getElementById("large-text-box");
 let history = [];
 let historyIndex = -1;
 const MAX_HISTORY = 100;
+let autoSaveTimeout;  // For debouncing autosave
 
+// Utility function to get cookie value
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== "") {
@@ -19,10 +21,16 @@ function getCookie(name) {
     return cookieValue;
 }
 
+// Save current text state to the server
 function saveTextState() {
     const textContent = textArea.value;
-    const documentId = document.querySelector("[data-document-id]").dataset.documentId;
-    console.log(textContent)
+    const documentIdElem = document.querySelector("[data-document-id]");
+    if (!documentIdElem) {
+        console.error("No document ID element found");
+        return;
+    }
+    const documentId = documentIdElem.dataset.documentId;
+    console.log(textContent);
     if (!documentId) {
         console.error("No document ID found");
         return;
@@ -46,12 +54,15 @@ function saveTextState() {
     })
     .then((data) => {
         console.log("Text state saved successfully:", data);
+        updateButtonState(true);
     })
     .catch((error) => {
         console.error("Error saving text state:", error);
+        updateButtonState(false);
     });
 }
 
+// Add current content to history
 function addToHistory(content) {
     // Remove any forward history if we're not at the latest state
     if (historyIndex < history.length - 1) {
@@ -69,9 +80,9 @@ function addToHistory(content) {
     historyIndex = history.length - 1;
 }
 
-
+// Download current text content as a text file
 function downloadText() {
-    const text = textArea.innerText;  // or textArea.textContent
+    const text = textArea.textContent;
     console.log(text);
     const blob = new Blob([text], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
@@ -84,29 +95,35 @@ function downloadText() {
     URL.revokeObjectURL(url);
 }
 
-
+// Clear the text area and update state
 function clearText() {
-    
     textArea.value = "";
     addToHistory("");
     saveTextState();
 }
 
+// Load the initial text state from the server
 async function loadInitialState() {
-    const documentId = document.querySelector("[data-document-id]").dataset.documentId;
-     
-    if (!documentId) return;
+    const documentIdElem = document.querySelector("[data-document-id]");
+    if (!documentIdElem) {
+        console.error("No document ID element found");
+        addToHistory("");
+        return;
+    }
+    const documentId = documentIdElem.dataset.documentId;
+    if (!documentId) {
+        console.error("No document ID found");
+        addToHistory("");
+        return;
+    }
 
     try {
         const response = await fetch(`/api/documents/${documentId}/`);
-        const document = await response.json();
-        
-
-        if (document.txt_field) {
-             
-            console.log(document.txt_field)
-            textArea.value = document.txt_field;
-            addToHistory(document.txt_content);
+        const docData = await response.json();
+        if (docData.txt_field) {
+            console.log(docData.txt_field);
+            textArea.value = docData.txt_field;
+            addToHistory(docData.txt_field);
         } else {
             addToHistory(""); // Initialize history with empty state
         }
@@ -116,6 +133,7 @@ async function loadInitialState() {
     }
 }
 
+// Render LaTeX content
 function renderLatex() {
     const text = textArea.value;
     const formData = new FormData();
@@ -137,7 +155,6 @@ function renderLatex() {
         return response.json();
     })
     .then(data => {
-        // Handle the response - this depends on your application's needs
         console.log("Render successful:", data);
     })
     .catch(error => {
@@ -148,82 +165,78 @@ function renderLatex() {
     });
 }
 
-// Initialize text area change tracking
+// Simple undo/redo functions using execCommand
+function undo() {
+    document.execCommand("undo", false, null);
+}
+
+function redo() {
+    document.execCommand("redo", false, null);
+}
+
+// Track text area changes and autosave
 textArea.addEventListener("input", (e) => {
     clearTimeout(autoSaveTimeout);
     addToHistory(e.target.value);
     autoSaveTimeout = setTimeout(saveTextState, 1000);
 });
 
-// Button bindings
+// Button bindings and initialization on DOMContentLoaded
 document.addEventListener("DOMContentLoaded", () => {
     // Load initial state
     loadInitialState();
 
-    // Bind buttons
-    document.getElementById("penButton").addEventListener("click", () => {
-        /* Can be used for formatting or other features */
+    // Bind buttons if they exist
+    document.getElementById("penButton")?.addEventListener("click", () => {
+        // Additional formatting or features can be added here
     });
     
-    document.getElementById("eraserButton").addEventListener("click", clearText);
-    document.getElementById("undoButton").addEventListener("click", () => {
-        document.execCommand("undo", false, null);
-    });
-    
-    document.getElementById("redoButton").addEventListener("click", () => {
-        document.execCommand("redo", false, null);
-    });
-    document.getElementById("downloadButton").addEventListener("click", downloadText);
-    document.getElementById("saveButton").addEventListener("click", saveTextState);
-    document.getElementById("backButton").addEventListener("click", () => {
+    document.getElementById("eraserButton")?.addEventListener("click", clearText);
+    document.getElementById("undoButton")?.addEventListener("click", undo);
+    document.getElementById("redoButton")?.addEventListener("click", redo);
+    document.getElementById("downloadButton")?.addEventListener("click", downloadText);
+    document.getElementById("saveButton")?.addEventListener("click", saveTextState);
+    document.getElementById("backButton")?.addEventListener("click", () => {
         saveTextState();
         window.location.href = "/documents/";
     });
-    document.getElementById("renderButton").addEventListener("click", renderLatex);
+    document.getElementById("renderButton")?.addEventListener("click", renderLatex);
 });
 
-
+// Update save button appearance based on save success/failure
 function updateButtonState(isSaveSuccess) {
     const saveButton = document.getElementById("saveButton");
+    if (!saveButton) return;
 
     // Clear previous state
     saveButton.classList.remove("green-background", "red-background");
-    document.querySelector(".checkmark")?.style.display = "none";
-    document.querySelector(".xmark")?.style.display = "none";
-    document.querySelector(".xmark")?.classList.remove("shake");
+    const checkmark = document.querySelector(".checkmark");
+    const xmark = document.querySelector(".xmark");
+    if (checkmark) checkmark.remove();
+    if (xmark) xmark.remove();
 
     if (isSaveSuccess) {
-        // If save is successful
         saveButton.classList.add("green-background");
-        const checkmark = document.createElement('div');
-        checkmark.classList.add('checkmark');
-        saveButton.appendChild(checkmark);
-        checkmark.style.display = 'block';
+        const newCheckmark = document.createElement('div');
+        newCheckmark.classList.add('checkmark');
+        saveButton.appendChild(newCheckmark);
     } else {
-        // If save fails
         saveButton.classList.add("red-background");
-        const xmark = document.createElement('div');
-        xmark.classList.add('xmark', 'shake');
-        saveButton.appendChild(xmark);
-        xmark.style.display = 'block';
+        const newXmark = document.createElement('div');
+        newXmark.classList.add('xmark', 'shake');
+        saveButton.appendChild(newXmark);
     }
 }
 
-
-// Add keyboard shortcuts
-
-
-
-
+// Keyboard shortcuts for undo, redo, and save
 document.addEventListener("keydown", (e) => {
-    if (e.ctrlKey || e.metaKey) { // Support for both Windows/Linux and Mac
+    if (e.ctrlKey || e.metaKey) { // For Windows/Linux and Mac support
         switch(e.key.toLowerCase()) {
             case 'z':
+                e.preventDefault();
                 if (e.shiftKey) {
-                    e.preventDefault();
                     redo();
                 } else {
-                    e.preventDefault();
                     undo();
                 }
                 break;
