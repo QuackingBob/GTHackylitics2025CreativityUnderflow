@@ -1,3 +1,8 @@
+:root {
+    --hover_color: #7f2b0a;
+    --base_color: #ffffff;
+  }
+
 /* Reset some default styling */
 * {
     margin: 0;
@@ -51,7 +56,7 @@ body {
     justify-content: center;
     width: 30px;
     height: 20px;
-    border: 2px solid #ffd6cc ;
+    border: 2px solid var(--base_color) ;
     background-color: #ffffff;
     border-radius: 10px;
     position: relative;
@@ -64,7 +69,7 @@ body {
 .toggle .circle {
     width: 12px;
     height: 12px;
-    background-color: #ffd6cc;
+    background-color: var(--base_color);
     border-radius: 50%;
     position: absolute;
     left: 2px;
@@ -83,7 +88,7 @@ body {
 .toggle.active .circle {
     right: 2px;
     left: auto;
-    background-color: #ffd6cc;
+    background-color: var(--base_color);
     /* Change circle color when active */
     transition: all 0.3s ease;
 }
@@ -119,14 +124,15 @@ canvas {
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.2s;
+    /* fill: #ff6347; */
 }
 
 .button:hover {
-    background-color: #ffd6cc ;
+    background-color: var(--hover_color) ;
 }
 
 .button.active {
-    background-color: #ffd6cc ;
+    background-color: var(--base_color) ;
 }
 
 .render-preview {

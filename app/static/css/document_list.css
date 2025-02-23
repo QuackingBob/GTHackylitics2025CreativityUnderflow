@@ -1,12 +1,12 @@
 .btn-glow {
-    background-color: #ffd6cc !important;
+    background-color: var(--base_color) !important;
     border: none !important;
     transition: all 0.3s ease !important;
 }
 
 .btn-glow:hover {
-    background-color:  #ffd6cc !important;
-    box-shadow: 0 0 20px #ffd6cc !important;
+    background-color:  var(--base_color) !important;
+    box-shadow: 0 0 20px var(--base_color) !important;
     transform: translateY(-2px) !important;
 }
 
@@ -133,7 +133,7 @@
     width: 20px;
     height: 20px;
     border-radius: 5px;
-    background-color: #BAA2F3;
+    background-color: #fad35c;
 }
 
 .card .card-footer {
@@ -194,11 +194,11 @@
 }
 
 .sidebar button:hover {
-    background-color: #6d43c1;
+    background-color: #E89B50;
 }
 
 .sidebar button:active {
-    background-color: #5736a0;
+    background-color: #875421;
 }
 
 /* Modal overlay */

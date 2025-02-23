@@ -94,22 +94,38 @@
         <button class="button" id="renderButton">
             <img src="{% static 'icons/document-1-svgrepo-com.svg' %}" style="height: 0px;" />
         </button>
+        
     </div>
 
     <div class="container" data-document-id="{{ document.id }}">
+        <!-- Recording & Transcription Split Layout -->
         <div class="render-preview" id="hidden-preview" style="display: none">
-            <div id="main-render" class="full">
-                <object data="{% static 'test/Homework 7.pdf' %}" type="application/pdf" width="100%" height="100%">
-                    <p>Unable to display PDF file. <a href="">Download</a> instead.</p>
-                </object>
+            <div class="video-container">
+                <video id="cameraFeed" width="100%" height="100%" autoplay></video>
+            </div>
+            <div class="transcription-container">
+                <h2>Live Speech-to-Text</h2>
+                <button class="start-button" onclick="startTranscription()">Start Transcription</button>
+                <div id="transcription"></div>
             </div>
         </div>
+    </div>  
 
-        <!-- Large Text Box for Notes or Additional Content -->
-        <div class="text-input-area">
-            <textarea id="large-text-box" placeholder="Type your script code here, or tap the microphone and preach!"></textarea>
-        </div>
-    </div>
+    <script>
+        function startTranscription() {
+            const eventSource = new EventSource("/transcribe/");
+            eventSource.onmessage = function(event) {
+                document.getElementById("transcription").innerHTML += event.data + "<br>";
+            };
+        }
+
+        // Access the user's camera
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                document.getElementById("cameraFeed").srcObject = stream;
+            })
+            .catch(error => console.error("Error accessing camera:", error));
+    </script>
 
     <script src="{% static 'js/form.js' %}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
