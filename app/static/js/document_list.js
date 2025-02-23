@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize file input display
     const fileInput = document.getElementById("txt_content");
     if (fileInput) {
+        fileInput.value = "";
         fileInput.addEventListener('change', displayFileName);
     }
 
@@ -37,15 +38,15 @@ async function handleFormSubmit(e) {
 
     const formData = new FormData();
     const titleInput = document.getElementById("title");
-    const txtfile = document.getElementById("txt_content").files[0];
+ //   const txtfile = document.getElementById("txt_content").files[0];
 
     if (titleInput) {
         formData.append("title", titleInput.value);
     }
 
-    if (txtfile) {
-        formData.append("txt_content", txtfile);
-    }
+ //   if (txtfile) {
+  //      formData.append("txt_content", txtfile);
+  //  }
 
     try {
         const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]");

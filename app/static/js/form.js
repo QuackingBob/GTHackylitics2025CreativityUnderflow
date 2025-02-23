@@ -25,6 +25,7 @@ function getCookie(name) {
 
 // Save current text state to the server
 function saveTextState(button=false) {
+     
     const textContent = textArea.value;
     const documentIdElem = document.querySelector("[data-document-id]");
     if (!documentIdElem) {
@@ -42,6 +43,7 @@ function saveTextState(button=false) {
     }
 
     const formData = new FormData();
+     
     formData.append("txt_content", textContent);
 
     fetch(`/api/documents/${documentId}/update-state2/`, {
@@ -58,7 +60,7 @@ function saveTextState(button=false) {
         return response.json();
     })
     .then((data) => {
-        console.log("Text state saved successfully:", data['success']);
+        console.log("Text state saved successfully:", data);
 
         if (button){
         updateButtonState(data['success']);

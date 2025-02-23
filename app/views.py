@@ -29,7 +29,7 @@ from django.http import JsonResponse
 import torch
 
 import tempfile
-import whisper
+#import whisper
 import os
 from django.views.decorators.csrf import csrf_exempt
 from django.core.files.storage import default_storage
@@ -225,9 +225,10 @@ class DocumentViewSet(viewsets.ModelViewSet):
             document = self.get_object()
             logger.debug(f"Updating state for document {pk}")
             logger.debug(f"Request data: {request.data}")
-            
+            print(request.data)
             if 'txt_content' in request.data:
                 document.txt_field = request.data['txt_content']
+                document.txt_content = request.data['txt_content']
                 document.save()
                 logger.debug(f"Successfully updated document {pk}")
                 return Response({
@@ -370,7 +371,7 @@ def save_text(request, doc_id):
 def render_presentation(request, doc_id):
     if request.method == "POST":
         document = Document.objects.get(id=doc_id)
-        text_content = request.POST.get("txt_content", "")
+        text_content = request.POST.get("txt_field", "")
 
         # Generate presentation from text content
         generator = PresentationGenerator()
