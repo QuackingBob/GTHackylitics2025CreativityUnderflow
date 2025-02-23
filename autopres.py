@@ -77,10 +77,14 @@ def process_html(html_file):
                 query_dir = os.path.join(section_dir, query.replace(" ", "_"))
                 scrape_images(query, query_dir)
 
-def parse_html_to_json(html_file):
+def parse_html_to_json(html_file, is_file = True):
     """Parses an HTML file and returns a structured JSON dictionary."""
-    with open(html_file, "r", encoding="utf-8") as f:
-        soup = BeautifulSoup(f, "html.parser")
+    soup = None
+    if is_file:
+        with open(html_file, "r", encoding="utf-8") as f:
+            soup = BeautifulSoup(f, "html.parser")
+    else:
+        soup = BeautifulSoup(html_file, "html.parser")
     
     sections = {}
     
@@ -122,7 +126,7 @@ class ScriptGenerator:
         self.save_dir = Path(save_dir) / "local_gens"
 
         # Load system prompt template
-        prompt_path = Path(__file__).parent / "Prompt_templates/intermediate_template.txt"
+        prompt_path = Path(__file__).parent / "script_template.txt"
         with open(prompt_path, "r") as f:
             self.prompt_template = f.read()
 
@@ -235,7 +239,7 @@ class ScriptGenerator:
                 output = output.replace("```html", "").replace("```", "")
                 f.write(output)
 
-            process_html(output_path)
+            # process_html(output_path)
 
             logger.info(f"Script generated successfully in {task_dir}")
 

@@ -213,8 +213,8 @@
     <button class="button" id="penButton">
       <img src="{% static 'icons/microphone-alt-1-svgrepo-com.svg' %}" style="height: 30px;" />
     </button>
-    <button class="button" id="eraserButton">
-      <img src="{% static 'icons/pause-svgrepo-com.svg' %}" style="height: 30px;" />
+    <button class="button" id="scriptButton">
+      <img src="{% static 'icons/split-two-svgrepo-com.svg' %}" style="height: 30px;" />
     </button>
     <button class="button" id="undoButton">
       <img src="{% static 'icons/undo-left-round-svgrepo-com.svg' %}" style="height: 30px;" />
@@ -281,6 +281,8 @@
                 </div>
             </div>
         </div>
+
+        <input type="hidden" id="doc_id" value="{{ doc_id }}">
         <script src="{% static 'js/form.js' %}"></script>
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.js"></script>
@@ -289,6 +291,30 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/markdown/markdown.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/highlight/highlight.js"></script>
         <script>
+            function script_revise() {
+                console.log("Pressed!")
+                var textValue = document.getElementById("large-text-box").value;
+                var docId = document.getElementById("doc_id").value;
+            
+                fetch(`/sections/${docId}/`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": "{{ csrf_token }}"
+                    },
+                    body: JSON.stringify({ text: textValue })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.redirect_url) {
+                        window.location.href = data.redirect_url; 
+                    }
+                })
+                .catch(error => console.error("Error:", error));
+            }
+            document
+                .getElementById("scriptButton")
+                .addEventListener("click", script_revise);
             // Initialize Reveal.js with better defaults
 
             let saveTimeout;
@@ -576,6 +602,10 @@
                                 mediaRecorder.stop();
                             }
                         }, 5000);
+                        // const eventSource = new EventSource("/transcribe/");
+                        // eventSource.onmessage = function(event) {
+                        //     document.getElementById("large-text-box").innerHTML += event.data + "<br>";
+                        // };
 
                     } catch (err) {
                         console.error('Error accessing microphone:', err);

@@ -183,6 +183,8 @@ function redo() {
     document.execCommand("redo", false, null);
 }
 
+
+
 // Track text area changes and autosave
 textArea.addEventListener("input", (e) => {
     clearTimeout(autoSaveTimeout);
@@ -196,13 +198,10 @@ document.addEventListener("DOMContentLoaded", () => {
     loadInitialState();
 
     // Bind buttons if they exist
-    document.getElementById("penButton")?.addEventListener("click", () => {
-        // Additional formatting or features can be added here
-    });
+    // document.getElementById("penButton")?.addEventListener("click", () => {
+    //     // Additional formatting or features can be added here
+    // });
 
-    document
-        .getElementById("eraserButton")
-        .addEventListener("click", clearText);
     document.getElementById("undoButton").addEventListener("click", undo);
     document.getElementById("redoButton").addEventListener("click", redo);
     document

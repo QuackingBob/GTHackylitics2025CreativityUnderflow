@@ -22,7 +22,7 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 import logging
 from django.views.decorators.csrf import csrf_exempt
-from autopres import PresentationGenerator
+from autopres import PresentationGenerator, ScriptGenerator, parse_html_to_json
 
 from django.shortcuts import render
 from django.http import JsonResponse
@@ -42,7 +42,6 @@ import io
 import numpy as np
 import torch
 import whisper
-import resampy
 from django.shortcuts import render
 from django.http import StreamingHttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -50,12 +49,16 @@ import logging
 from queue import Queue
 from pydub import AudioSegment
 
+import json
+
 logger = logging.getLogger(__name__)
 
 # Load the Whisper model
-model = whisper.load_model("medium")  # Or "small", "medium", etc.
+model = whisper.load_model("small")  # Or "small", "medium", etc.
 
 audio_queue = Queue()
+recognizer = sr.Recognizer()
+
 
 
 @csrf_exempt
@@ -99,6 +102,11 @@ def generate_transcription():
             if audio_data is None:  # Signal to stop
                 break
 
+            # source = recognizer.adjust_for_ambient_noise(audio_data)
+            # audio = recognizer.listen(source, timeout=5)
+            # audio_data = np.frombuffer(audio.get_raw_data(), dtype=np.int16).astype(np.float32) / 32768.0
+            # result = model.transcribe(audio_data, fp16=torch.cuda.is_available())
+
             result = model.transcribe(audio_data, fp16=torch.cuda.is_available())
             text = result["text"].strip()
 
@@ -109,6 +117,23 @@ def generate_transcription():
         logger.exception("Error in generate_transcription")
         yield f"data: Error: {str(e)}\n\n"
 
+# def generate_transcription():
+#     recognizer = sr.Recognizer()
+#     # model = whisper.load_model("small")
+#     global model
+
+#     with sr.Microphone(sample_rate=16000) as source:
+#         recognizer.adjust_for_ambient_noise(source)
+#         while True:
+#             try:
+#                 print("Listening...")
+#                 audio = recognizer.listen(source, timeout=5)
+#                 audio_data = np.frombuffer(audio.get_raw_data(), dtype=np.int16).astype(np.float32) / 32768.0
+#                 result = model.transcribe(audio_data, fp16=torch.cuda.is_available())
+#                 yield f"data: {result['text'].strip()}\n\n"
+#             except Exception as e:
+#                 yield f"data: Error: {str(e)}\n\n"
+
 
 def start_transcription(request):
     return StreamingHttpResponse(
@@ -118,66 +143,6 @@ def start_transcription(request):
 
 def document_speak(request):
     return render(request, "app/document_speak.html")
-
-
-def section_display(request):
-    sections = [
-        {
-            "title": "Introduction and Problem Statement",
-            "text": "Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.",
-            "suggestions": "This section could benefit from a more concise introduction that directly states the problem before diving into examples.",
-            "image_suggestions": "robot performing complex task, robot manipulation in kitchen, long horizon task planning robot",
-        },
-        {
-            "title": "Current Methods and Limitations",
-            "text": "Current methods to solve these long horizon tasks fall largely into two campaigns...",
-            "suggestions": "This section would benefit from clearer explanations of 'task and motion planning' and 'behavioral tasks/RL'.",
-            "image_suggestions": "task and motion planning diagram, reinforcement learning robot diagram, visual language model robot interaction",
-        },
-        {
-            "title": "Proposed Approach and Emphasis",
-            "text": "This raises an employee to perform long-horizon tasks and real- the semantics of natural language instruction...",
-            "suggestions": "This section is very unclear and needs significant improvement.",
-            "image_suggestions": "Natural Language Robot Instruction, Robot low-level skills, generalizable measure of robot task performance",
-        },
-        {
-            "title": "New",
-            "text": "Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.",
-            "suggestions": "This section could benefit from a more concise introduction that directly states the problem before diving into examples.",
-            "image_suggestions": "robot performing complex task, robot manipulation in kitchen, long horizon task planning robot",
-        },
-        {
-            "title": "New2",
-            "text": "Current methods to solve these long horizon tasks fall largely into two campaigns...",
-            "suggestions": "This section would benefit from clearer explanations of 'task and motion planning' and 'behavioral tasks/RL'.",
-            "image_suggestions": "task and motion planning diagram, reinforcement learning robot diagram, visual language model robot interaction",
-        },
-        {
-            "title": "New3",
-            "text": "This raises an employee to perform long-horizon tasks and real- the semantics of natural language instruction...",
-            "suggestions": "This section is very unclear and needs significant improvement.",
-            "image_suggestions": "Natural Language Robot Instruction, Robot low-level skills, generalizable measure of robot task performance",
-        },
-        {
-            "title": "New4",
-            "text": "Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.",
-            "suggestions": "This section could benefit from a more concise introduction that directly states the problem before diving into examples.",
-            "image_suggestions": "robot performing complex task, robot manipulation in kitchen, long horizon task planning robot",
-        },
-        {
-            "title": "New5",
-            "text": "Current methods to solve these long horizon tasks fall largely into two campaigns...",
-            "suggestions": "This section would benefit from clearer explanations of 'task and motion planning' and 'behavioral tasks/RL'.",
-            "image_suggestions": "task and motion planning diagram, reinforcement learning robot diagram, visual language model robot interaction",
-        },
-        {
-            "title": "New6",
-            "text": "This raises an employee to perform long-horizon tasks and real- the semantics of natural language instruction...",
-            "suggestions": "This section is very unclear and needs significant improvement.",
-            "image_suggestions": "Natural Language Robot Instruction, Robot low-level skills, generalizable measure of robot task performance",
-        },
-    ]
-    return render(request, "app/document_feedback.html", {"sections": sections})
 
 
 # Load the Whisper model (choose small, medium, or large based on available resources)
@@ -302,7 +267,7 @@ def document_detail(request, document_id):
     document = get_object_or_404(Document, id=document_id, owner=request.user)
 
     # Render the template with the document context
-    return render(request, "app/document_form.html", {"document": document})
+    return render(request, "app/document_form.html", {"document": document, "doc_id": document_id})
 
 
 def document_list(request):
@@ -374,3 +339,114 @@ def render_presentation(request, doc_id):
 def presentation_view(request, document_id):
     document = get_object_or_404(Document, id=document_id, owner=request.user)
     return render(request, "app/presentation.html", {"document": document})
+
+def update_script(request, doc_id):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        text = data.get('text', '')
+
+        redirect_url = f"/documents/sections/{doc_id}/?text={text}"
+
+        print(redirect_url)
+
+        return JsonResponse({'redirect_url': redirect_url})
+    
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+
+def section_display(request, doc_id):
+    text = request.GET.get('text', '')
+    try:
+        if not text:
+            return JsonResponse({"error": "No text content provided"}, status=400)
+
+        # Generate presentation from text content
+        generator = ScriptGenerator()
+        try:
+            result = generator.generate(text)
+            script_html = result["html"]
+            script_json = parse_html_to_json(script_html, is_file=False)
+
+            # print(script_json)
+
+            formatted_sections = [
+                {
+                    "title": section_data["title"],
+                    "text": section_data["text"],
+                    "suggestions": section_data.get("suggestions", ""),
+                    "image_suggestions": ", ".join(section_data.get("image_suggestions", [])),  # Convert list to string
+                }
+                for section_data in script_json.values()  # Iterate over section values
+            ]
+
+            return render(request, "app/document_feedback.html", 
+                          {"sections": formatted_sections, "doc_id": doc_id})
+            
+        except Exception as e:
+            logger.error(f"Presentation generation error: {str(e)}")
+            return JsonResponse(
+                {"error": f"Failed to generate presentation: {str(e)}"}, status=500
+            )
+
+    except Document.DoesNotExist:
+        return JsonResponse({"error": "Document not found"}, status=404)
+    except Exception as e:
+        logger.error(f"Unexpected error: {str(e)}")
+        return JsonResponse({"error": "Server error"}, status=500)
+    sections = [
+        {
+            "title": "Introduction and Problem Statement",
+            "text": "Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.",
+            "suggestions": "This section could benefit from a more concise introduction that directly states the problem before diving into examples.",
+            "image_suggestions": "robot performing complex task, robot manipulation in kitchen, long horizon task planning robot",
+        },
+        {
+            "title": "Current Methods and Limitations",
+            "text": "Current methods to solve these long horizon tasks fall largely into two campaigns...",
+            "suggestions": "This section would benefit from clearer explanations of 'task and motion planning' and 'behavioral tasks/RL'.",
+            "image_suggestions": "task and motion planning diagram, reinforcement learning robot diagram, visual language model robot interaction",
+        },
+        {
+            "title": "Proposed Approach and Emphasis",
+            "text": "This raises an employee to perform long-horizon tasks and real- the semantics of natural language instruction...",
+            "suggestions": "This section is very unclear and needs significant improvement.",
+            "image_suggestions": "Natural Language Robot Instruction, Robot low-level skills, generalizable measure of robot task performance",
+        },
+        {
+            "title": "New",
+            "text": "Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.",
+            "suggestions": "This section could benefit from a more concise introduction that directly states the problem before diving into examples.",
+            "image_suggestions": "robot performing complex task, robot manipulation in kitchen, long horizon task planning robot",
+        },
+        {
+            "title": "New2",
+            "text": "Current methods to solve these long horizon tasks fall largely into two campaigns...",
+            "suggestions": "This section would benefit from clearer explanations of 'task and motion planning' and 'behavioral tasks/RL'.",
+            "image_suggestions": "task and motion planning diagram, reinforcement learning robot diagram, visual language model robot interaction",
+        },
+        {
+            "title": "New3",
+            "text": "This raises an employee to perform long-horizon tasks and real- the semantics of natural language instruction...",
+            "suggestions": "This section is very unclear and needs significant improvement.",
+            "image_suggestions": "Natural Language Robot Instruction, Robot low-level skills, generalizable measure of robot task performance",
+        },
+        {
+            "title": "New4",
+            "text": "Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.Second latency. With robots becoming increasingly prominent in society, so too does the desire for them to solve complex multistage tasks increase.",
+            "suggestions": "This section could benefit from a more concise introduction that directly states the problem before diving into examples.",
+            "image_suggestions": "robot performing complex task, robot manipulation in kitchen, long horizon task planning robot",
+        },
+        {
+            "title": "New5",
+            "text": "Current methods to solve these long horizon tasks fall largely into two campaigns...",
+            "suggestions": "This section would benefit from clearer explanations of 'task and motion planning' and 'behavioral tasks/RL'.",
+            "image_suggestions": "task and motion planning diagram, reinforcement learning robot diagram, visual language model robot interaction",
+        },
+        {
+            "title": "New6",
+            "text": "This raises an employee to perform long-horizon tasks and real- the semantics of natural language instruction...",
+            "suggestions": "This section is very unclear and needs significant improvement.",
+            "image_suggestions": "Natural Language Robot Instruction, Robot low-level skills, generalizable measure of robot task performance",
+        },
+    ]
+    return render(request, "app/document_feedback.html", {"sections": sections})

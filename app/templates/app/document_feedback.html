@@ -284,8 +284,10 @@
 </head>
 <body>
     <div class="sidebar">
-        <button class="button" title="Edit"><img src="{% static 'icons/pen-line-svgrepo-com.svg' %}" alt="Edit" /></button>
-        <button class="button" title="Clear"><img src="{% static 'icons/eraser-svgrepo-com.svg' %}" alt="Clear" /></button>
+        <button class="button" id="backButton">
+            <img src="{% static 'icons/back-arrow-direction-down-right-left-up-2-svgrepo-com.svg' %}"
+                style="height: 30px;" />
+        </button>
     </div>
 
     <div class="container">
@@ -308,6 +310,11 @@
     </div>
 
     <script>
+
+        document.getElementById("backButton").addEventListener("click", () => {
+            window.location.href = "/documents/{{ doc_id }}/";
+        });
+
          document.addEventListener("DOMContentLoaded", function() {
             const mouseFollower = document.getElementById("mouseFollower");
             let isOverHighlight = false;
