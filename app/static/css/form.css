@@ -181,7 +181,17 @@ canvas {
     background-color: #e0e0e0;
 }
 
-.button img {
+/* Base styles */
+.buttonsave {
+    position: relative;
+    padding: 10px;
+    border-radius: 5px;
+    background-color: #f0f0f0;
+    transition: background-color 0.3s ease;
+}
+
+
+.buttonsave img {
     width: 24px;
     /* Set a specific width */
     height: 24px;
@@ -325,4 +335,59 @@ canvas {
     border-radius: 50%; */
     animation: spin 2s linear infinite;
     /* -webkit-animation: spin 1s linear infinite; */
+}
+
+
+/* Base styles */
+/* Base styles */
+/*.button {
+    position: relative;
+    padding: 10px;
+    border-radius: 5px;
+    background-color: #f0f0f0;
+    transition: background-color 0.3s ease;
+}*/
+
+.button img {
+    transition: transform 0.3s ease;
+}
+
+.green-background {
+    background-color: #d9ead3 !important; /* Ensures it takes precedence */
+}
+
+.red-background {
+    background-color: #f8cccc !important; /* Red background for failure */
+}
+
+.checkmark, .xmark {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    height: 20px;
+    width: 20px;
+    display: none;
+}
+
+.shake {
+    animation: shake 0.5s ease infinite;
+}
+
+@keyframes shake {
+    0% {
+        transform: translateX(0);
+    }
+    25% {
+        transform: translateX(-5px);
+    }
+    50% {
+        transform: translateX(5px);
+    }
+    75% {
+        transform: translateX(-5px);
+    }
+    100% {
+        transform: translateX(0);
+    }
 }
