@@ -253,7 +253,7 @@
   </div>
 
         <!-- Add success message -->
-        <!--div class="success-message">Changes saved successfully!</div-->
+        <div class="success-message">Changes saved successfully!</div>
 
         <!-- Add exit presentation button -->
         <div class="exit-presentation">
@@ -302,10 +302,17 @@
                 document.querySelector(".presentation-area");
             const exitButton = document.querySelector(".exit-presentation");
             let isPresentationMode = false;
+            let recognition;
+            let isRecording = false;
+            let mediaRecorder;
+            let audioChunks = [];
+            let eventSource;
+            let stream;
 
             // Function to show success message
-            function showSuccessMessage() {
+            function showSuccessMessage(message) {
                 successMessage.style.display = "block";
+                successMessage.textContent = message;
                 setTimeout(() => {
                     successMessage.style.display = "none";
                 }, 2000);
@@ -374,7 +381,7 @@
 
                     if (response.ok) {
                         lastSavedContent = textContent;
-                        showSuccessMessage();
+                        showSuccessMessage("Changes saved successfully!");
                     } else {
                         console.error("Save failed:", data.error);
                         alert("Failed to save: " + data.error);
@@ -387,51 +394,38 @@
                 }
             }
 
-            // Function to render presentation
+            // Separate render function
             async function renderPresentation() {
-                const docId =
-                    document.querySelector(".container").dataset.documentId;
-                const textContent =
-                    document.getElementById("large-text-box").value;
+                const docId = document.querySelector(".container").dataset.documentId;
+                const textContent = document.getElementById("large-text-box").value;
+                
                 loadingIndicator.style.display = "block";
                 loadingIndicator.textContent = "Generating presentation...";
-
+                
                 try {
-                    const response = await fetch(
-                        `/render_presentation/${docId}/`,
-                        {
-                            method: "POST",
-                            headers: {
-                                "Content-Type":
-                                    "application/x-www-form-urlencoded",
-                            },
-                            body: `txt_content=${encodeURIComponent(
-                                textContent
-                            )}`,
-                        }
-                    );
+                    const response = await fetch(`/render_presentation/${docId}/`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded",
+                        },
+                        body: `txt_content=${encodeURIComponent(textContent)}`,
+                    });
 
                     const data = await response.json();
-
-                    if (response.ok) {
-                        if (data.presentation_html) {
-                            updatePresentation(data.presentation_html);
-                            successMessage.textContent =
-                                "Presentation rendered successfully!";
-                            showSuccessMessage();
-                            // Automatically enter presentation mode after rendering
-                            togglePresentationMode(true);
-                        }
+                    
+                    if (response.ok && data.presentation_html) {
+                        // Just store the HTML without displaying
+                        document.getElementById("presentation-content").innerHTML = data.presentation_html;
+                        showSuccessMessage("Presentation rendered successfully!");
                     } else {
                         console.error("Render failed:", data.error);
                         alert("Failed to render: " + data.error);
                     }
                 } catch (error) {
                     console.error("Error rendering:", error);
-                    alert("Error rendering presentation. Please try again.");
+                    alert("Error generating presentation. Please try again.");
                 } finally {
                     loadingIndicator.style.display = "none";
-                    loadingIndicator.textContent = "Generating presentation...";
                 }
             }
 
@@ -540,61 +534,133 @@
                 );
             }
 
-            // Add this WebSocket code to the existing <script> block:
-            const docId = document.querySelector(".container").dataset.documentId;
-            const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            const wsPath = `${wsProtocol}://${window.location.host}/ws/transcribe/${docId}/`;
-            const ws = new WebSocket(wsPath);
+            // Pen (microphone) button click handler
+            document.getElementById("penButton").addEventListener("click", async function() {
+                const textBox = document.getElementById("large-text-box");
+                
+                if (!isRecording) {
+                    try {
+                        // Start recording
+                        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                        mediaRecorder = new MediaRecorder(stream);
+                        audioChunks = [];
+                        isRecording = true;
+                        
+                        loadingIndicator.style.display = "block";
+                        loadingIndicator.textContent = "Listening...";
+                        
+                        mediaRecorder.ondataavailable = event => {
+                            audioChunks.push(event.data);
+                        };
 
-            // Audio capture setup
-            let mediaRecorder;
-            let audioChunks = [];
-            const textArea = document.getElementById("large-text-box");
+                        mediaRecorder.onstop = async () => {
+                            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                            audioChunks = [];
+                            await sendAudioToServer(audioBlob);
+                            
+                            if (stream && stream.active) {
+                                mediaRecorder.start();
+                            }
+                        };
 
-            ws.onmessage = function(event) {
-                const data = JSON.parse(event.data);
-                if(data.transcription) {
-                    textArea.value += data.transcription + " ";
-                    saveContent(false); // Auto-save with existing function
+                        // Start recording and SSE connection
+                        mediaRecorder.start();
+                        startTranscriptionSSE();
+                        
+                        // Update button appearance
+                        this.querySelector("img").style.filter = "invert(37%) sepia(93%) saturate(7471%) hue-rotate(356deg) brightness(101%) contrast(135%)";
+                        
+                        // Stop recording every 5 seconds to process chunks
+                        setInterval(() => {
+                            if (mediaRecorder && mediaRecorder.state === "recording") {
+                                mediaRecorder.stop();
+                            }
+                        }, 5000);
+
+                    } catch (err) {
+                        console.error('Error accessing microphone:', err);
+                        alert('Error: Could not access microphone. Please ensure you have granted microphone permissions.');
+                        isRecording = false;
+                        loadingIndicator.style.display = "none";
+                    }
+                } else {
+                    // Stop recording
+                    isRecording = false;
+                    if (mediaRecorder && mediaRecorder.state !== "inactive") {
+                        mediaRecorder.stop();
+                    }
+                    if (stream) {
+                        stream.getTracks().forEach(track => track.stop());
+                    }
+                    if (eventSource) {
+                        eventSource.close();
+                    }
+                    loadingIndicator.style.display = "none";
+                    this.querySelector("img").style.filter = "none";
                 }
-            };
+            });
 
-            async function startRecording() {
+            // Add these functions before the event listeners
+            async function sendAudioToServer(audioBlob) {
+                const formData = new FormData();
+                formData.append('audio', audioBlob, 'audio.webm');
+
                 try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                    mediaRecorder = new MediaRecorder(stream);
-                    
-                    mediaRecorder.ondataavailable = (event) => {
-                        if (event.data.size > 0) {
-                            ws.send(event.data);
-                        }
-                    };
-                    
-                    mediaRecorder.start(1000); // Capture chunks every 1 second
-                    document.getElementById("penButton").classList.add("recording");
-                    loadingIndicator.textContent = "Listening...";
-                } catch (err) {
-                    console.error("Error accessing microphone:", err);
-                    alert("Microphone access denied. Please enable microphone permissions.");
+                    const response = await fetch('/process_audio/', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Server error: ${response.status}`);
+                    }
+                } catch (error) {
+                    console.error('Error sending audio:', error);
+                    throw error;
                 }
+            }
+
+            function startTranscriptionSSE() {
+                eventSource = new EventSource("/transcribe/");
+                eventSource.onmessage = function(event) {
+                    const textBox = document.getElementById("large-text-box");
+                    if (event.data.startsWith("Error:")) {
+                        console.error("Transcription Error:", event.data);
+                        alert(event.data);
+                        stopRecording();
+                    } else {
+                        // Insert text at cursor position
+                        const cursorPos = textBox.selectionStart;
+                        const textBefore = textBox.value.substring(0, cursorPos);
+                        const textAfter = textBox.value.substring(cursorPos);
+                        textBox.value = textBefore + " " + event.data + " " + textAfter;
+                        
+                        // Trigger autosave
+                        if (saveTimeout) clearTimeout(saveTimeout);
+                        saveTimeout = setTimeout(() => saveContent(false), 2000);
+                    }
+                };
+                
+                eventSource.onerror = function(err) {
+                    console.error("EventSource failed:", err);
+                    eventSource.close();
+                };
             }
 
             function stopRecording() {
+                isRecording = false;
                 if (mediaRecorder && mediaRecorder.state !== "inactive") {
                     mediaRecorder.stop();
-                    document.getElementById("penButton").classList.remove("recording");
-                    loadingIndicator.textContent = "Generating presentation...";
                 }
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                }
+                if (eventSource) {
+                    eventSource.close();
+                }
+                loadingIndicator.style.display = "none";
+                document.getElementById("penButton").querySelector("img").style.filter = "none";
             }
-
-            // Update penButton click handler
-            document.getElementById("penButton").addEventListener("click", function() {
-                if (this.classList.contains("recording")) {
-                    stopRecording();
-                } else {
-                    startRecording();
-                }
-            });
         </script>
 
         <script src="{% static 'js/form.js' %}"></script>

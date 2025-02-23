@@ -32,7 +32,6 @@ function saveTextState(button = false) {
         return;
     }
     const documentId = documentIdElem.dataset.documentId;
-   
     if (!documentId) {
         console.error("No document ID found");
         if (button) {
@@ -43,7 +42,7 @@ function saveTextState(button = false) {
     const formData = new FormData();
     formData.append("txt_content", textContent);
 
-    fetch(`/api/documents/${documentId}/update-state2/`, {
+    fetch(`/api/documents/${documentId}/update-state/`, {
         method: "PATCH",
         headers: {
             "X-CSRFToken": getCookie("csrftoken"),
@@ -152,7 +151,7 @@ function renderLatex() {
     const renderButtonIcon = renderButton.querySelector("img");
     renderButtonIcon.classList.add("spinner");
 
-    fetch("/render", {
+    fetch("/render_presentation/", {
         method: "POST",
         headers: {
             "X-CSRFToken": getCookie("csrftoken"),
@@ -275,12 +274,3 @@ document.addEventListener("keydown", (e) => {
         }
     }
 });
-navigator.mediaDevices
-    .getUserMedia({ audio: true })
-    .then((stream) => {
-        // Handle browser-specific audio processing
-        const audioContext = new (window.AudioContext ||
-            window.webkitAudioContext)();
-        const source = audioContext.createMediaStreamSource(stream);
-    })
-    .catch(console.error);

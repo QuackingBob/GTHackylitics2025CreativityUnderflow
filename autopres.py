@@ -12,6 +12,8 @@ import logging
 import requests
 import urllib.request
 
+import google.generativeai as genai
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

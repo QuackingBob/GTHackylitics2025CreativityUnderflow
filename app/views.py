@@ -29,7 +29,6 @@ from django.http import JsonResponse
 import torch
 
 import tempfile
-import whisper
 import os
 from django.views.decorators.csrf import csrf_exempt
 from django.core.files.storage import default_storage
@@ -39,6 +38,75 @@ from django.shortcuts import render
 from django.http import StreamingHttpResponse
 
 # import whisper
+import io
+import numpy as np
+import torch
+import whisper
+import resampy
+from django.shortcuts import render
+from django.http import StreamingHttpResponse, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import logging
+from queue import Queue
+from pydub import AudioSegment
+
+logger = logging.getLogger(__name__)
+
+# Load the Whisper model
+model = whisper.load_model("large")  # Or "small", "medium", etc.
+
+audio_queue = Queue()
+
+@csrf_exempt
+def process_audio(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+    audio_file = request.FILES.get('audio')
+    if not audio_file:
+        return JsonResponse({'error': 'No audio file provided'}, status=400)
+
+    try:
+        audio_bytes = audio_file.read()
+        audio_segment = AudioSegment.from_file(io.BytesIO(audio_bytes), format="webm")
+
+        # Convert to mono and 16kHz sample rate
+        audio_segment = audio_segment.set_channels(1)
+        audio_segment = audio_segment.set_frame_rate(16000)
+
+        # Export as raw PCM (which Whisper expects)
+        audio_data = np.array(audio_segment.get_array_of_samples(), dtype=np.float32) / (2**15) # Correct scaling for pydub
+
+        audio_queue.put(audio_data)
+        logger.debug(f"Current audio queue size: {audio_queue.qsize()}")
+        return JsonResponse({'status': 'audio received'})
+
+    except Exception as e:
+        logger.exception("Error processing audio")
+        return JsonResponse({'error': str(e)}, status=500)
+def generate_transcription():
+    global model
+    try:
+        while True:
+            audio_data = audio_queue.get()
+            if audio_data is None:  # Signal to stop
+                break
+
+            result = model.transcribe(audio_data, fp16=torch.cuda.is_available())
+            text = result['text'].strip()
+
+            if text:
+                yield f"data: {text}\n\n"
+
+    except Exception as e:
+        logger.exception("Error in generate_transcription")
+        yield f"data: Error: {str(e)}\n\n"
+
+def start_transcription(request):
+    return StreamingHttpResponse(generate_transcription(), content_type="text/event-stream")
+
+def document_speak(request):
+    return render(request, "app/document_speak.html")
 
 
 def section_display(request):
@@ -105,14 +173,6 @@ def section_display(request):
 # model = whisper.load_model("small")
 
 
-@login_required
-def document_list(request):
-    documents = Document.objects.filter(owner=request.user)
-    return render(request, "app/document_list.html", {"documents": documents})
-
-
-logger = logging.getLogger(__name__)
-
 
 class DocumentViewSet(viewsets.ModelViewSet):
     """
@@ -154,29 +214,20 @@ class DocumentViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["patch"], url_path="update-state")
     def update_state(self, request, pk=None):
         """
-        Custom action to update document state with new text content and generate presentation
+        Custom action to update document state with new text content
         """
         try:
             document = self.get_object()
             logger.debug(f"Updating state for document {pk}")
             logger.debug(f"Request data: {request.data}")
+            logger.debug(f"Request headers: {request.headers}")
 
             if "txt_content" in request.data:
                 document.txt_field = request.data["txt_content"]
-
-                # Generate presentation from text content
-                generator = PresentationGenerator()
-                result = generator.generate(document.txt_field)
-                document.presentation_html = result["html"]
-
                 document.save()
                 logger.debug(f"Successfully updated document {pk}")
                 return Response(
-                    {
-                        "success": True,
-                        "message": "State updated successfully",
-                        "presentation_html": document.presentation_html,
-                    }
+                    {"success": True, "message": "State updated successfully"}
                 )
             else:
                 logger.warning(f"No text content provided for document {pk}")
@@ -190,38 +241,6 @@ class DocumentViewSet(viewsets.ModelViewSet):
                 {"success": False, "error": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
-
-    @action(detail=True, methods=['patch'], url_path='update-state2')
-    def update_state2(self, request, pk=None):
-        """
-        Custom action to update document state with new text content
-        """
-        try:
-            document = self.get_object()
-            logger.debug(f"Updating state for document {pk}")
-            logger.debug(f"Request data: {request.data}")
-            
-            if 'txt_content' in request.data:
-                document.txt_field = request.data['txt_content']
-                document.save()
-                logger.debug(f"Successfully updated document {pk}")
-                return Response({
-                    'success': True,
-                    'message': 'State updated successfully'
-                })
-            else:
-                logger.warning(f"No text content provided for document {pk}")
-                return Response({
-                    'success': False,
-                    'error': 'No text content provided'
-                }, status=status.HTTP_400_BAD_REQUEST)    
-        except Exception as e:
-            logger.error(f"Error updating document {pk}: {str(e)}")
-            return Response({
-                'success': False,
-                'error': str(e)
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-       
 
 
 @login_required
@@ -243,39 +262,10 @@ def document_detail(request, document_id):
     return render(request, "app/document_form.html", {"document": document})
 
 
+def document_list(request):
+    documents = Document.objects.filter(owner=request.user)
 
-def recompile_latex(request):
-    if request.method == "POST":
-        latex = request.POST["latex"]
-        with open("static/output.tex", "w") as f:
-            f.write(latex)
-
-        try:
-            subprocess.run(
-                ["pdflatex", "-output-directory=static", "static/output.tex"],
-                check=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-            pdf_path = "static/output.pdf"
-
-            # Check if the PDF was created successfully
-            if os.path.exists(pdf_path):
-                # Return both PDF and latex content in JSON response
-                with open(pdf_path, "rb") as pdf_file:
-                    pdf_content = pdf_file.read()
-                    pdf_base64 = base64.b64encode(pdf_content).decode("utf-8")
-
-                return JsonResponse({"pdf": pdf_base64, "latex": latex})
-            else:
-                return JsonResponse({"error": "PDF compilation failed"}, status=500)
-
-        except subprocess.CalledProcessError as e:
-            return JsonResponse(
-                {"error": f"Compilation error: {e.stderr.decode()}"}, status=500
-            )
-
-    return JsonResponse({"error": "Invalid request method."}, status=405)
+    return render(request, "app/document_list.html", {"documents": documents})
 
 
 def landing(request):
@@ -301,22 +291,39 @@ def save_text(request, doc_id):
 @csrf_exempt
 def render_presentation(request, doc_id):
     if request.method == "POST":
-        document = Document.objects.get(id=doc_id)
-        text_content = request.POST.get("txt_content", "")
+        try:
+            document = get_object_or_404(Document, id=doc_id)
+            text_content = request.POST.get("txt_content", "")
 
-        # Generate presentation from text content
-        generator = PresentationGenerator()
-        result = generator.generate(text_content)
-        document.presentation_html = result["html"]
-        document.save()
+            if not text_content:
+                return JsonResponse({"error": "No text content provided"}, status=400)
 
-        return JsonResponse(
-            {
-                "message": "Rendered successfully!",
-                "presentation_html": document.presentation_html,
-            }
-        )
-    return JsonResponse({"error": "Invalid request"}, status=400)
+            # Generate presentation from text content
+            generator = PresentationGenerator()
+            try:
+                result = generator.generate(text_content)
+                document.presentation_html = result["html"]
+                document.save()
+
+                return JsonResponse(
+                    {
+                        "message": "Rendered successfully!",
+                        "presentation_html": document.presentation_html,
+                    }
+                )
+            except Exception as e:
+                logger.error(f"Presentation generation error: {str(e)}")
+                return JsonResponse(
+                    {"error": f"Failed to generate presentation: {str(e)}"}, status=500
+                )
+
+        except Document.DoesNotExist:
+            return JsonResponse({"error": "Document not found"}, status=404)
+        except Exception as e:
+            logger.error(f"Unexpected error: {str(e)}")
+            return JsonResponse({"error": "Server error"}, status=500)
+
+    return JsonResponse({"error": "Invalid request method"}, status=400)
 
 
 @login_required
