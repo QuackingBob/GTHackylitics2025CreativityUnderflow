@@ -53,7 +53,7 @@ from pydub import AudioSegment
 logger = logging.getLogger(__name__)
 
 # Load the Whisper model
-model = whisper.load_model("large")  # Or "small", "medium", etc.
+model = whisper.load_model("medium")  # Or "small", "medium", etc.
 
 audio_queue = Queue()
 
