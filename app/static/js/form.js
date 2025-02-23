@@ -3,7 +3,7 @@ const textArea = document.getElementById("large-text-box");
 let history = [];
 let historyIndex = -1;
 const MAX_HISTORY = 100;
-let autoSaveTimeout;  // For debouncing autosave
+let autoSaveTimeout; // For debouncing autosave
 
 // Utility function to get cookie value
 function getCookie(name) {
@@ -24,8 +24,7 @@ function getCookie(name) {
 }
 
 // Save current text state to the server
-function saveTextState(button=false) {
-     
+function saveTextState(button = false) {
     const textContent = textArea.value;
     const documentIdElem = document.querySelector("[data-document-id]");
     if (!documentIdElem) {
@@ -33,48 +32,43 @@ function saveTextState(button=false) {
         return;
     }
     const documentId = documentIdElem.dataset.documentId;
-   
     if (!documentId) {
         console.error("No document ID found");
-        if (button){
-        updateButtonState(false);
+        if (button) {
+            updateButtonState(false);
         }
-       
     }
 
     const formData = new FormData();
      
     formData.append("txt_content", textContent);
 
-    fetch(`/api/documents/${documentId}/update-state2/`, {
+    fetch(`/api/documents/${documentId}/update-state/`, {
         method: "PATCH",
         headers: {
             "X-CSRFToken": getCookie("csrftoken"),
         },
         body: formData,
     })
-    .then((response) => {
-        if (!response.ok) {
-            throw new Error("Network response was not ok");
-        }
-        return response.json();
-    })
-    .then((data) => {
-        console.log("Text state saved successfully:", data);
-
-        if (button){
-        updateButtonState(data['success']);
-        }
-      //  return data['success']
-        
-    })
-    .catch((error) => {
-        console.error("Error saving text state:", error);
-        if(button){
-            updateButtonState(false);
-        }
-    });
-    
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error("Network response was not ok");
+            }
+            return response.json();
+        })
+        .then((data) => {
+            console.log("Text state saved successfully:", data["success"]);
+            if (button) {
+                updateButtonState(data["success"]);
+            }
+            //  return data['success']
+        })
+        .catch((error) => {
+            console.error("Error saving text state:", error);
+            if (button) {
+                updateButtonState(false);
+            }
+        });
 }
 
 // Add current content to history
@@ -158,26 +152,26 @@ function renderLatex() {
     const renderButtonIcon = renderButton.querySelector("img");
     renderButtonIcon.classList.add("spinner");
 
-    fetch("/render", {
+    fetch("/render_presentation/", {
         method: "POST",
         headers: {
             "X-CSRFToken": getCookie("csrftoken"),
         },
         body: formData,
     })
-    .then(response => {
-        if (!response.ok) throw new Error("Network response was not ok");
-        return response.json();
-    })
-    .then(data => {
-        console.log("Render successful:", data);
-    })
-    .catch(error => {
-        console.error("Error rendering:", error);
-    })
-    .finally(() => {
-        renderButtonIcon.classList.remove("spinner");
-    });
+        .then((response) => {
+            if (!response.ok) throw new Error("Network response was not ok");
+            return response.json();
+        })
+        .then((data) => {
+            console.log("Render successful:", data);
+        })
+        .catch((error) => {
+            console.error("Error rendering:", error);
+        })
+        .finally(() => {
+            renderButtonIcon.classList.remove("spinner");
+        });
 }
 
 // Simple undo/redo functions using execCommand
@@ -211,18 +205,21 @@ document.addEventListener("DOMContentLoaded", () => {
         .addEventListener("click", clearText);
     document.getElementById("undoButton").addEventListener("click", undo);
     document.getElementById("redoButton").addEventListener("click", redo);
-    document.getElementById("downloadButton").addEventListener("click", downloadText);
+    document
+        .getElementById("downloadButton")
+        .addEventListener("click", downloadText);
     document.getElementById("saveButton").addEventListener("click", () => {
-         
         saveTextState(true);
-      //  console.log(out)
-      //  updateButtonState(out);
+        //  console.log(out)
+        //  updateButtonState(out);
     });
     document.getElementById("backButton").addEventListener("click", () => {
         saveTextState();
         window.location.href = "/documents/";
     });
-    document.getElementById("renderButton")?.addEventListener("click", renderLatex);
+    document
+        .getElementById("renderButton")
+        ?.addEventListener("click", renderLatex);
 });
 
 // Function to handle button state change based on success or failure
@@ -232,37 +229,34 @@ function updateButtonState(isSaveSuccess) {
 
     // Clear previous state
     saveButton.classList.remove("green-background", "red-background");
-    saveIcon.style.animation = '';  // Remove shake animation
+    saveIcon.style.animation = ""; // Remove shake animation
 
     if (isSaveSuccess) {
         // If save is successful, change the icon and background
         saveButton.classList.add("green-background");
-        saveIcon.src = window.iconPaths.checkmark;  // Checkmark icon
-        saveIcon.style.animation = 'shake 0.5s ease ';
+        saveIcon.src = window.iconPaths.checkmark; // Checkmark icon
+        saveIcon.style.animation = "shake 0.5s ease ";
     } else {
         // If save fails, change the icon and background
         saveButton.classList.add("red-background");
-        saveIcon.src = window.iconPaths.error;  // Error icon
-        saveIcon.style.animation = 'shake 0.5s ease ';  // Apply shake animation
+        saveIcon.src = window.iconPaths.error; // Error icon
+        saveIcon.style.animation = "shake 0.5s ease "; // Apply shake animation
     }
 
     setTimeout(() => {
         saveButton.classList.remove("green-background", "red-background");
-        saveIcon.style.animation = '';  // Clear shake animation
-        saveIcon.src = window.iconPaths.save;  // Restore the original save icon
-    }, 600); 
+        saveIcon.style.animation = ""; // Clear shake animation
+        saveIcon.src = window.iconPaths.save; // Restore the original save icon
+    }, 600);
 }
-
 
 // Add keyboard shortcuts
 
-
-
-
 document.addEventListener("keydown", (e) => {
-    if (e.ctrlKey || e.metaKey) { // For Windows/Linux and Mac support
-        switch(e.key.toLowerCase()) {
-            case 'z':
+    if (e.ctrlKey || e.metaKey) {
+        // For Windows/Linux and Mac support
+        switch (e.key.toLowerCase()) {
+            case "z":
                 e.preventDefault();
                 if (e.shiftKey) {
                     redo();

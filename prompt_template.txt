@@ -34,9 +34,11 @@ You are a world-class presentation designer, specializing in creating captivatin
     *   Headers: "Bebas Neue", "Montserrat", "Raleway", "Source Sans Pro"
     *   Body Text: "Lato", "Open Sans", "Roboto"
 
-*   **Contrast: MUST be high. Light text on dark backgrounds is the default.**
+*   **Contrast: Should be high. Light text on dark backgrounds is the default.**
 
 *   Whitespace: Use ample whitespace to improve readability.
+*   Margins: Ensure text has enough space from the edges of the slide.
+*   Icons: When Icons are paired with text, ensure icons are centered above or beside the text.
 
 ### Visual Elements (Prioritize Icons)
 
@@ -342,3 +344,5 @@ You are a world-class presentation designer, specializing in creating captivatin
   </script>
 </body>
 </html>
+
+ Do not generate any text other than html.
